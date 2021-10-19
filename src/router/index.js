@@ -7,6 +7,7 @@ import Cards from '../views/Cards.vue'
 import Modules from '../views/Modules.vue'
 import Sessions from '../views/Sessions.vue'
 import Sentences from '../views/Sentences.vue'
+import Tests from '../views/Tests.vue'
 
 Vue.use(VueRouter)
 
@@ -43,6 +44,11 @@ const routes = [
     path: '/sentences',
     name: 'Sentences',
     component:Sentences
+  },
+  {
+    path: '/tests',
+    name: 'Tests',
+    component:Tests
   }
 ]
 

@@ -52,7 +52,7 @@
 <script>
 
 export default {
-  //Validar como funciona al motar para validar sesion valida
+  //Validar como funciona al montar para validar sesion valida
   data(){
   return{
     dialog:false,
