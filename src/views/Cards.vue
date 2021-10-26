@@ -6,57 +6,69 @@
             <h4>Create a new Card</h4>
         </v-row>
         <v-row>
-            <v-col sm="1" class="pt-10">
-                <span>Topic<span style="color:red">*</span>:</span>
-            </v-col>
-            <v-col sm="4">
-                <v-combobox :items="itemsT" @change="select_topic"></v-combobox>
-            </v-col>
-            <v-col sm="1" class="pt-10 ml-0">
-                <span class="mt-6">Text<span style="color:red">*</span>: </span>
-            </v-col>
-            <v-col sm="4" class="pt-3 ml-0">
-                <v-text-field v-model="description"></v-text-field>
-            </v-col>
-        </v-row>
-        <v-row>
-            <v-col sm="1" class="pt-6 ml-0">
-                <span class="pt-6 ml-2">Image<span style="color:red">*</span>: </span>
-            </v-col>
-            <v-col sm="4" class="pt-0">
-                <v-file-input append-icon="mdi-file-image" @change="preview_image" dark:true v-model="image_card"></v-file-input>
-            </v-col>
-            <v-col sm="1" class="mt-4">
-                <span class="mt-6">Audio:</span>
-            </v-col>
-            <v-col sm="4" class="pt-0">
-                <v-file-input append-icon="mdi-volume-high" @change="load_audio" dark:true v-model="audio_url"></v-file-input>
-            </v-col>
-        </v-row>
-        <v-row>
-            <v-col sm="1" class="pt-6 ml-0">
-                <span class="pt-6 ml-2">Video: </span>
-            </v-col>
-            <v-col sm="4" class="pt-0">
-                <v-file-input append-icon="mdi-video-box" dark:true v-model="image_card"></v-file-input>
-            </v-col>
-            <v-col sm="1" class="mt-4">
-                <span class="mt-6">Meaning:</span>
-            </v-col>
-            <v-col sm="4" class="pt-0">
-                <v-file-input append-icon="mdi-file-pdf-box" dark:true v-model="audio_url"></v-file-input>
-            </v-col>
-        </v-row>
-        <v-row>
+          <v-col sm=8 class="ml-0">
             <v-row>
-                <v-card elevation="2" width="150" height="165">
+              <v-col sm="1" class="mt-8 d-flex justify-start">
+                <span>Topic<span style="color:red">*</span>:</span>
+              </v-col>
+              <v-col sm="4">
+                <v-combobox :items="itemsT" @change="select_topic"></v-combobox>
+              </v-col>
+              <v-col sm="1" class="mt-8 ml-2  d-flex justify-end">
+                <span class="">Text<span style="color:red">*</span>:</span>
+              </v-col>
+              <v-col sm="4" class="ml-3">
+                <v-text-field v-model="description"></v-text-field>
+              </v-col>
+            </v-row>
+            <v-row>
+              <v-col sm="1" class="mt-3 d-flex justify-start" >
+                <span class="">Image<span style="color:red">*</span>: </span>
+              </v-col>
+              <v-col sm="4" class=" pt-0">
+                <v-file-input append-icon="mdi-file-image" @change="preview_image" dark:true v-model="image_card"></v-file-input>
+              </v-col>
+              <v-col sm="1" class="ml-3 mt-3 d-flex justify-start">
+                <span class="">Audio:</span>
+              </v-col>
+              <v-col sm="4" class="pt-0">
+                <v-file-input append-icon="mdi-volume-high" @change="load_audio" dark:true v-model="audio_url"></v-file-input>
+              </v-col>
+            </v-row>
+            <v-row>
+              <v-row>
+                <v-col sm="1" class="mt-2 d-flex justify-start ml-3">
+                    <span class="ml-3">Video:</span>
+                </v-col>
+                <v-col sm="4" class="pt-0">
+                  <v-file-input append-icon="mdi-video-box" dark:true v-model="video_url"></v-file-input>
+                </v-col>
+                <v-col sm="1" class="mt-4 d-flex justify-end">
+                  <span class="">Meaning:</span>
+                </v-col>
+                <v-col sm="4" class="pt-0">
+                  <v-file-input append-icon="mdi-file-pdf-box" dark:true v-model="meaning_url"></v-file-input>
+                </v-col>
+              </v-row>      
+            </v-row>
+            <v-row>
+              <v-col sm="8" class="d-flex justify-end ml-8">
+                <v-btn depressed color="primary" class="pa-4 mt-3" @click="saveRegistry()">Save</v-btn>
+              </v-col>
+              <v-col sm="3" class="d-flex justify-start">
+                <v-btn depressed color="secondary" class="pa-4 mt-3" @click="showForm();">Cancel</v-btn>  
+              </v-col>
+              </v-row>
+          </v-col>
+          <v-col sm="4">
+                <v-card elevation="2" width="200" height="255">
                     <v-card-title class="justify-center">{{title}}</v-card-title>
                     <v-card-text class="justify-center">
                         <v-row>
                         <v-img
                         contain
                         max-height="90"
-                        max-width="160"
+                        max-width="170"
                         :src="image_url"
                         class="ml-4"
                         ></v-img>
@@ -71,12 +83,15 @@
                         </v-row>
                     </v-card-text>
                 </v-card>
-            </v-row>
+          </v-col> 
+        </v-row>
+        <v-row>
+            <v-col  sm="12" >
+              
+            </v-col>
         </v-row>
       </div>
-      
     </v-expand-transition>
-      
       <v-row>
         <div style="width:30%">
           <v-text-field type="text" placeholder="Search Sentence" append-icon="mdi-magnify" class="ml-4"></v-text-field>
@@ -91,8 +106,14 @@
       <template v-slot:item="row">
           <tr>
             <td>{{row.item.id}}</td>
-            <td>{{row.item.name}}</td>
-            <td>{{row.item.description}}</td>
+            <td>{{row.item.text}}</td>
+            <td>
+              <span v-if="row.item.image"><v-icon border>mdi-image-album</v-icon> </span>
+              <span v-if="row.item.audio"><v-icon  border>mdi-volume-high</v-icon> </span>
+              <span v-if="row.item.video"><v-icon  border>mdi-video-box</v-icon> </span>
+              <span v-if="row.item.meaning"><v-icon border>mdi-file-pdf-box</v-icon> </span>
+            </td>
+            
             <td>
               <v-icon medium border>mdi-pencil-outline</v-icon> 
               <v-icon medium border>mdi-trash-can-outline</v-icon> 
@@ -124,14 +145,14 @@ export default {
     itemsP:[],
     headers:[
       {text:"ID",align:'start',sortable:true,value:"id"},
-      {text:"Name",align:'start',sortable:true,value:"name"},
-      {text:"Description",align:'start',value:"description"},
+      {text:"Text",align:'start',sortable:true,value:"text"},
+      {text:"Help",align:'start',value:"description"},
       {text:"Actions",align:'start',value:"actions"}
     ],
     desserts:[
-      {id:1,name:"Session Pronoums",description:"Session Pronoums",sentences:5},
-      {id:2,name:"Session Verbs",description:"Session verbs",sentences:1},
-      {id:3,name:"Session Present",description:"Session present continuos",sentences:3},
+      {id:1,text:"Module One",description:"Module init",image:"url",audio:"asd",video:"",meaning:""},
+      {id:2,text:"Module Two",description:"Second Module",image:"xd",audio:"asd",video:"asd",meaning:""},
+      {id:3,text:"Module Three",description:"Otrher Module",image:"as",audio:"",video:"asd",meaning:"asd"},
     ]
   }
   },

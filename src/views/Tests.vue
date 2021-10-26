@@ -14,7 +14,7 @@
             </v-row>
         </div>
         <div id="body" v-if="showTest">
-            HOLA PIANOLA
+            <Card/>
         </div>
         <div id="control">
         </div>
@@ -22,6 +22,7 @@
 </template>
 
 <script>
+import Card from '../components/Card.vue'
 
 export default {
  data: () => {
@@ -34,6 +35,9 @@ export default {
         itemsSession:[]
     }
  },
+components:{
+    Card
+    },
  methods:{
      load_sessions(e){
          this.selectSessionDisabled=true
@@ -54,10 +58,13 @@ export default {
          }
          
      },
+     loadTest(){
+     },
      initTest(){
          if(this.currentTest!=0){
              console.log("Test a mostrar"+this.currentTest)
              this.showTest=true
+              
          }
      }
  }
