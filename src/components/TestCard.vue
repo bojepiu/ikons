@@ -1,20 +1,33 @@
 <template>
   <v-container>
-      <v-card elevation="2" width="200" height="255">
+      <!-- los tamaños seran de acuerdo al tamaño de las sentencias -->
+      <v-card elevation="2" width="260" height="340">
             <v-card-title class="justify-center">{{title}}</v-card-title>
+            <hr>
             <v-card-text class="justify-center">
                 <v-row>
                 <v-img
                 contain
-                max-height="90"
+                max-height="250"
                 max-width="170"
                 :src="image_url"
-                class="ml-4"
+                class="ml-8"
                 ></v-img>
                 </v-row>
-                <v-row>
-                    <v-text-field readonly v-model="description"></v-text-field>
+                
+                <v-row class="d-flex justify-center">
+                    <v-btn class="mx-2" fab dark small color="primary">
+                         <v-icon dark>mdi-arrow-left-circle</v-icon>
+                    </v-btn>
+                    <v-btn class="mx-2" fab dark small color="primary">
+                         <v-icon dark>mdi-arrow-right-circle</v-icon>
+                    </v-btn>
+                    
                 </v-row>
+                
+                <br>
+                <hr>
+                <br>
                 <v-row class="d-flex justify-center">
                     <v-icon large border @click="play_audio">mdi-volume-high</v-icon> 
                     <v-icon large border>mdi-video-box</v-icon> 
@@ -27,7 +40,10 @@
 
 <script>
 export default {
+    //add properties
+    
     name: 'Contact-Component',
+    props: {'title':String},
     data(){
         return{
             image_card:null,
