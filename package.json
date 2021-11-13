@@ -13,6 +13,7 @@
     "vue": "^2.6.11",
     "vue-lazytube": "^1.0.2",
     "vue-router": "^3.5.2",
+    "vue-video-player": "^5.0.2",
     "vuetify": "^2.4.0"
   },
   "devDependencies": {
