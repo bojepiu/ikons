@@ -16,14 +16,13 @@
         <div id="body" v-if="showBody">
             <Skeleton v-if="showSkeleton"/>    
             <div id="bodytest" v-if="showTest">
-                <h5>Bodytest</h5>
                 <v-row>
                     <v-col sm="12" md="6" lg="3"><Card v-bind:title="sentence[0].text[0]"/></v-col>
                     <v-col sm="12" md="6" lg="3"><Card v-bind:title="sentence[0].text[1]"/></v-col>
                     <v-col sm="12" md="6" lg="3"><Card v-bind:title="sentence[0].text[2]"/></v-col>
                     <v-col sm="12" md="6" lg="3"><Card v-bind:title="sentence[0].text[3]"/></v-col>    
                 </v-row>
-                <div id="controlpanel">
+                <div id="controlpanel" class="pt-6">
                 <br>
                 <ControlPanel/>
             </div>
@@ -84,7 +83,7 @@ components:{
         this.activate()
     },
     activate() {
-         setTimeout(() => {this.showSkeleton = false; this.showTest=true}, 5000);
+         setTimeout(() => {this.showSkeleton = false; this.showTest=true}, 100);
     },
     initTest(){
         if(this.currentTest!=0){
