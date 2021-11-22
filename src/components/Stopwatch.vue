@@ -1,10 +1,9 @@
 <template>
   
       <v-card
-  elevation="2"
-  loading
-  style="height:50px">
-    <p class="pt-4">Time:{{ time | secondsInMinutes }}</p>
+  elevation="0"
+  style="height:50px;">
+    <p class="pt-4" style="font-size:15px">{{ time | secondsInMinutes }}</p>
 </v-card>
 
   

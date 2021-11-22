@@ -1,6 +1,6 @@
 <template>
     <v-container>
-        <div id="header">
+        <div id="header" v-if="!showBody">
             <v-row>
                 <v-col sm="12" md="4" lg="3">
                     <v-select :items="itemsModules" :disabled="showBody" item-value="cveModule" item-text="moduleName"  class="mt-3" placeholder="Select Module" @change="load_sessions"></v-select>
@@ -22,14 +22,11 @@
                     <v-col sm="12" md="6" lg="3"><Card v-bind:title="sentence[0].text[2]"/></v-col>
                     <v-col sm="12" md="6" lg="3"><Card v-bind:title="sentence[0].text[3]"/></v-col>    
                 </v-row>
-                <div id="controlpanel" class="pt-6">
-                <br>
+            </div>
+            <v-footer style="margin-top:140px">
                 <ControlPanel/>
-            </div>
-            </div>
-            
+            </v-footer>
         </div>
-        
     </v-container>
 </template>
 
