@@ -1,5 +1,9 @@
 <template>
   <v-container>
+    <div class="d-flex justify-center" style="top:0; left:0; width:100vw;position:absolute;">
+    <v-alert :value="alert_visible==true" :type="alert_type" dark  
+    transition="scale-transition" dismissible v-on:click="alert_visible=false">{{alert_text}}</v-alert>
+    </div>
     <v-expand-transition>
       <div v-show="expand">
         <v-row class="pt-5">
@@ -41,7 +45,7 @@
                     <span class="ml-3">Video:</span>
                 </v-col>
                 <v-col sm="4" class="pt-0">
-                  <v-file-input append-icon="mdi-video-box" dark:true v-model="preview_card.video"></v-file-input>
+                  <v-file-input append-icon="mdi-video-box" dark:true v-model="input_video_value" @change="load_video"></v-file-input>
                 </v-col>
                 <v-col sm="1" class="mt-4 d-flex justify-end">
                   <span class="">Meaning:</span>
@@ -53,7 +57,7 @@
             </v-row>
             <v-row>
               <v-col sm="8" class="d-flex justify-end ml-8">
-                <v-btn depressed color="primary" class="pa-4 mt-3" @click="saveRegistry()">Save</v-btn>
+                <v-btn depressed color="primary" class="pa-4 mt-3" @click="saveRegistry(preview_card.topic_id)">Save</v-btn>
               </v-col>
               <v-col sm="3" class="d-flex justify-start">
                 <v-btn depressed color="secondary" class="pa-4 mt-3" @click="showForm();">Cancel</v-btn>  
@@ -62,7 +66,7 @@
           </v-col>
           <v-col sm="4">
                 <v-card elevation="2" width="200" height="255">
-                    <v-card-title class="justify-center">{{preview_card.topic}}</v-card-title>
+                    <v-card-title class="justify-center">{{preview_card.topic_text}}</v-card-title>
                     <v-card-text class="justify-center">
                         <v-row>
                         <v-img
@@ -77,9 +81,9 @@
                             <v-text-field readonly v-model="preview_card.text"></v-text-field>
                         </v-row>
                         <v-row class="d-flex justify-center">
-                            <v-icon large border @click="play_audio">mdi-volume-high</v-icon> 
-                            <v-icon large border>mdi-video-box</v-icon> 
-                            <v-icon large border>mdi-file-pdf-box</v-icon> 
+                            <v-icon v-if="preview_card.audio" medium border @click="play_audio">mdi-volume-high</v-icon> 
+                            <v-icon v-if="preview_card.video" medium border @click="show_alert('You can view the video after save card','warning')">mdi-video-box</v-icon> 
+                            <v-icon v-if="preview_card.meaning" medium border>mdi-file-pdf-box</v-icon> 
                         </v-row>
                     </v-card-text>
                 </v-card>
@@ -124,6 +128,7 @@
     <DialogMeaning :dialog.sync="dialog_meaning_visible" :image_url.sync="dialog_meaning_url"/>
     <DialogImage :dialog.sync="dialog_image_visible" :image_url.sync="dialog_image_url"/>
     <DialogVideo :dialog.sync="dialog_video_visible" :playerOptions.sync="dialog_video_options"/>
+    
   </v-container>
   
 </template>
@@ -164,7 +169,7 @@ export default {
     table_data_cards:[],
     //FORM SECTION
     list_all_topics:[],
-    preview_card:{id:0,topic:"",text:"",image:undefined,audio:undefined,video:undefined,meaning:undefined},
+    preview_card:{id:0,topic_id:0,topic_text:"",text:"",image:undefined,audio:undefined,video:undefined,meaning:undefined},
     input_image_value:[],
     input_audio_value:[],
     input_video_value:[],
@@ -173,6 +178,10 @@ export default {
     audio_url:"",
     video_url:"",
     meaning_url:"",
+    //ALERT
+    alert_visible:false,
+    alert_type:"success",
+    alert_text:"",
   }
   },
   methods:{
@@ -187,7 +196,10 @@ export default {
       else{this.icon_new='mdi-plus'}
     },
     saveRegistry(id=0){
-      if(this.preview_card.topic==""){
+      if(id==0){
+        this.preview_card.topic_id=0
+      }
+      if(this.preview_card.topic_text==""){
         console.log("No se ha seleccionado un tema")
       }
       if(this.preview_card.text==""){
@@ -196,15 +208,30 @@ export default {
       }
       if(this.preview_card.image==""){
         console.log("Faltan datos por llenar")
+        return
       }
-        console.log(id)
+      this.upload_file(this.input_image_value,'images')
+      if(this.input_audio_value!=''){
+        this.upload_file(this.input_audio_value,'audio')
+      }
+      if(this.input_video_value!=''){
+        this.upload_file(this.input_video_value,'video')
+      }
+      if(this.input_meaning_value!=''){
+        this.upload_file(this.input_meaning_value,'meaning')
+      }
     },
     select_topic(e){
       if(e.cveTopic==undefined){
-        alert(0)
+      this.preview_card.topic_id=0
+      this.preview_card.topic_text=e
       }
-      console.log(e.cveTopic)
-      this.preview_card.topic=e.topicName
+      else{
+        this.preview_card.topic_id=e.cveTopic
+        this.preview_card.topic_text=e.topicName
+      }
+      
+      
     },
     load_image(e){    
       if(e==null){
@@ -212,7 +239,7 @@ export default {
         this.image_url="404notfoundimage.png"
         return
       }    
-      if(e.type !== 'image/jpeg'&& e.type !== 'image/png' && e.type !== 'image/jpg'){
+      if(e.type !== 'image/jpeg'&& e.type !== 'image/png' && e.type !== 'image/jpg' && e.type !== 'image/gif'){
         alert("Solo se permiten imagenes")
         this.input_image_value=[] 
       }
@@ -221,6 +248,7 @@ export default {
       }
     },
     load_audio(){
+      this.input_audio_value=this.preview_card.audio
       this.audio_url=URL.createObjectURL(this.preview_card.audio)    
     },
     play_audio(){
@@ -228,6 +256,7 @@ export default {
       audio.play()
     },
     load_video(){
+      //this.input_video_value=e
       return 
     },
     play_video(){
@@ -254,8 +283,43 @@ export default {
             type: "video/mp4",
             src: url_dialog_video
           }]
-      }
+      },
       this.dialog_video_visible=true
+    },
+    async show_alert(s,type_msg){
+      this.alert_visible=true
+      this.alert_type=type_msg
+      this.alert_text=s      
+      await this.timeout(3000)
+      this.alert_visible=false
+    },
+    upload_file(file,type){
+      let formData = new FormData()
+      formData.append('files',file)
+      axios.post( 'http://localhost:5000/ikon/v1/uploadFile',
+      formData,
+      {
+        headers: {
+            'Content-Type': 'multipart/form-data',
+            'X-Type': type
+        },
+      }
+      ).then(function(res){
+        if(res.data.status==200){
+          alert("File uploaded")  
+          console.log(res.data.path)
+        }
+        else{
+          alert("Error uploading file")
+        }
+       
+      })
+      .catch(function(){
+        alert("Error uploading file")
+      });
+    },
+    timeout(ms) { //pass a time in milliseconds to this function
+    return new Promise(resolve => setTimeout(resolve, ms));
     },
     show_dialog_meaning(url_dialog_meaning){
       this.dialog_meaning_visible=true
@@ -268,13 +332,10 @@ export default {
     this.list_all_topics=await this.get_all_topics()
     //Get data table
     this.table_data_cards=[
-      {id:1,id_topic:"",topic_text:"asd",text:"Module One",description:"Module init",image:"https://www.gettyimages.com.mx/gi-resources/images/500px/983794168.jpg",audio:"asd",video:"video/hello_video.mp4",meaning:""},
+      {id:1,topic_id:"",topic_text:"asd",text:"Module One",description:"Module init",image:"https://www.gettyimages.com.mx/gi-resources/images/500px/983794168.jpg",audio:"asd",video:"video/hello_video.mp4",meaning:""},
       {id:2,text:"Module Two",description:"Second Module",image:"https://cdn.pixabay.com/photo/2021/08/25/20/42/field-6574455__340.jpg",audio:"asd",video:"asd",meaning:"https://fondosmil.com/fondo/11764.jpg"},
       {id:3,text:"Module Three",description:"Otrher Module",image:"https://www.gettyimages.es/gi-resources/images/frontdoor/editorial/Velo/GettyImages-Velo-1088643550.jpg",audio:"",video:"https://www.w3school.com.cn/example/html5/mov_bbb.mp4",meaning:"http://qnimate.com/wp-content/uploads/2014/03/images2.jpg"},
     ]    
-    
-    
-
   }
 }
 </script>

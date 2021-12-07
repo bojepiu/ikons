@@ -17,13 +17,13 @@
         <br>
         <v-card-actions class="pt-0">
             <v-row class="d-flex justify-center">
-                <v-icon medium class="ml-0">mdi-arrow-left-circle</v-icon>
-                <v-icon medium class="p-0">mdi-arrow-right-circle</v-icon>
-                <v-icon medium class="pl-4">mdi-volume-high</v-icon> 
-                <v-icon medium class="">mdi-video-box</v-icon> 
-                <v-icon medium class="">mdi-file-pdf-box</v-icon> 
-                <v-icon medium class="ml-4" @click="change_mark">mdi-pound</v-icon>
-                <v-icon medium @click="clear_mark">mdi-backspace</v-icon>
+                <v-icon small class="ml-0">mdi-arrow-left-circle</v-icon>
+                <v-icon small class="p-0">mdi-arrow-right-circle</v-icon>
+                <v-icon small class="pl-4">mdi-volume-high</v-icon> 
+                <v-icon small class="">mdi-video-box</v-icon> 
+                <v-icon small class="">mdi-file-pdf-box</v-icon> 
+                <v-icon small class="ml-4" @click="change_mark">mdi-pound</v-icon>
+                <v-icon small @click="clear_mark">mdi-backspace</v-icon>
             </v-row>
         </v-card-actions>
     </v-card>
