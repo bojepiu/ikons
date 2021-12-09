@@ -45,19 +45,19 @@
                     <span class="ml-3">Video:</span>
                 </v-col>
                 <v-col sm="4" class="pt-0">
-                  <v-file-input append-icon="mdi-video-box" dark:true v-model="input_video_value" @change="load_video"></v-file-input>
+                  <v-file-input append-icon="mdi-video-box" dark:true v-model="input_video_value" ></v-file-input>
                 </v-col>
                 <v-col sm="1" class="mt-4 d-flex justify-end">
                   <span class="">Meaning:</span>
                 </v-col>
                 <v-col sm="4" class="pt-0">
-                  <v-file-input append-icon="mdi-file-pdf-box" dark:true v-model="preview_card.meaning"></v-file-input>
+                  <v-file-input append-icon="mdi-file-pdf-box" dark:true v-model="input_meaning_value"></v-file-input>
                 </v-col>
               </v-row>      
             </v-row>
             <v-row>
               <v-col sm="8" class="d-flex justify-end ml-8">
-                <v-btn depressed color="primary" class="pa-4 mt-3" @click="saveRegistry(preview_card.topic_id)">Save</v-btn>
+                <v-btn depressed color="primary" class="pa-4 mt-3" @click="saveRegistry(preview_card.topic_id,$event)">Save</v-btn>
               </v-col>
               <v-col sm="3" class="d-flex justify-start">
                 <v-btn depressed color="secondary" class="pa-4 mt-3" @click="showForm();">Cancel</v-btn>  
@@ -81,9 +81,9 @@
                             <v-text-field readonly v-model="preview_card.text"></v-text-field>
                         </v-row>
                         <v-row class="d-flex justify-center">
-                            <v-icon v-if="preview_card.audio" medium border @click="play_audio">mdi-volume-high</v-icon> 
-                            <v-icon v-if="preview_card.video" medium border @click="show_alert('You can view the video after save card','warning')">mdi-video-box</v-icon> 
-                            <v-icon v-if="preview_card.meaning" medium border>mdi-file-pdf-box</v-icon> 
+                            <v-icon v-if="input_audio_value!=''" medium border @click="play_audio">mdi-volume-high</v-icon> 
+                            <v-icon v-if="input_video_value!=''" medium border @click="show_alert('You can view the video after save card','warning')">mdi-video-box</v-icon> 
+                            <v-icon v-if="input_meaning_value!=''" medium border>mdi-file-pdf-box</v-icon> 
                         </v-row>
                     </v-card-text>
                 </v-card>
@@ -98,7 +98,7 @@
     </v-expand-transition>
       <v-row>
         <div style="width:30%">
-          <v-text-field type="text" placeholder="Search Card" append-icon="mdi-magnify" class="ml-4"></v-text-field>
+          <v-text-field type="text" v-model="search" placeholder="Search Card" append-icon="mdi-magnify" class="ml-4"></v-text-field>
         </div>
         <div style="width:50%" class="d-flex justify-start ml-6">
           <v-btn class="mt-3" title="New Topic" fab dark color="indigo" small @click="showForm()"> 
@@ -106,18 +106,18 @@
           </v-btn>
         </div>
       </v-row>    
-    <v-data-table :headers="headers" :items="table_data_cards" :items-per-page="10" class="elevation-2">
+    <v-data-table :headers="headers" :items="filteredItems" :items-per-page="10" class="elevation-2">
       <template v-slot:item="row">
           <tr>
             <td>{{row.item.id}}</td>
+            <td>{{row.item.topic_text}}</td>
             <td>{{row.item.text}}</td>
             <td>
               <span v-if="row.item.image" @click="show_dialog_image(row.item.image)"><v-icon border>mdi-image-album</v-icon> </span>
               <span v-if="row.item.audio"><v-icon  border>mdi-volume-high</v-icon> </span>
               <span v-if="row.item.video" @click="show_dialog_video(row.item.video)"><v-icon  border>mdi-video-box</v-icon> </span>
               <span v-if="row.item.meaning" @click="show_dialog_meaning(row.item.meaning)"><v-icon border>mdi-file-pdf-box</v-icon></span>
-            </td>
-            
+            </td>            
             <td>
               <v-icon medium border>mdi-pencil-outline</v-icon> 
               <v-icon medium border>mdi-trash-can-outline</v-icon> 
@@ -128,9 +128,7 @@
     <DialogMeaning :dialog.sync="dialog_meaning_visible" :image_url.sync="dialog_meaning_url"/>
     <DialogImage :dialog.sync="dialog_image_visible" :image_url.sync="dialog_image_url"/>
     <DialogVideo :dialog.sync="dialog_video_visible" :playerOptions.sync="dialog_video_options"/>
-    
   </v-container>
-  
 </template>
 <script>
 import axios from 'axios'
@@ -139,9 +137,7 @@ import DialogImage from '../components/DialogImage.vue'
 import DialogVideo from '../components/DialogVideo.vue'
 
 var audio=new Audio()
-
 // var new_card={id:0,text:"",image:"",audio:"",video:"",meaning:""}
-
 export default {
   components: { DialogMeaning,DialogImage,DialogVideo },
   //Validar como funciona al montar para validar sesion valida 
@@ -159,6 +155,7 @@ export default {
     dialog_meaning_visible:false,
     dialog_meaning_url:"",
     //TABLE SECTION
+    search:'',
     headers:[
       {text:"ID",align:'start',sortable:true,value:"id"},
       {text:"Topic",align:'start',sortable:true,value:"topic_text"},
@@ -195,31 +192,35 @@ export default {
       if(this.expand){this.icon_new='mdi-minus'}
       else{this.icon_new='mdi-plus'}
     },
-    saveRegistry(id=0){
+    async saveRegistry(id=0,e){
+      e.preventDefault()
       if(id==0){
         this.preview_card.topic_id=0
       }
       if(this.preview_card.topic_text==""){
-        console.log("No se ha seleccionado un tema")
+        this.show_alert("Topic not found in card","warning")
+        return
       }
       if(this.preview_card.text==""){
-        console.log("Faltan datos por llenar")
+        this.show_alert("Text not found in card","warning")
         return
       }
-      if(this.preview_card.image==""){
-        console.log("Faltan datos por llenar")
+      if(this.preview_card.image=="" || this.image_url=="404notfoundimage.png"){
+        this.show_alert("Image not found in card","warning")
         return
       }
-      this.upload_file(this.input_image_value,'images')
+      if (!await this.upload_file(this.input_image_value,'images')){return}
       if(this.input_audio_value!=''){
-        this.upload_file(this.input_audio_value,'audio')
+        if(!await this.upload_file(this.input_audio_value,'audio')){return}
       }
       if(this.input_video_value!=''){
-        this.upload_file(this.input_video_value,'video')
+        if(!await this.upload_file(this.input_video_value,'video')){return}
       }
       if(this.input_meaning_value!=''){
-        this.upload_file(this.input_meaning_value,'meaning')
+        if(!await this.upload_file(this.input_meaning_value,'meaning')){return}
       }
+      this.show_alert("Card saved successfully","success")
+      return
     },
     select_topic(e){
       if(e.cveTopic==undefined){
@@ -230,8 +231,6 @@ export default {
         this.preview_card.topic_id=e.cveTopic
         this.preview_card.topic_text=e.topicName
       }
-      
-      
     },
     load_image(e){    
       if(e==null){
@@ -240,10 +239,11 @@ export default {
         return
       }    
       if(e.type !== 'image/jpeg'&& e.type !== 'image/png' && e.type !== 'image/jpg' && e.type !== 'image/gif'){
-        alert("Solo se permiten imagenes")
+        this.show_alert("Image not valid","warning")
         this.input_image_value=[] 
       }
       else{
+        this.preview_card.image=e
         this.image_url= URL.createObjectURL(this.input_image_value)
       }
     },
@@ -254,13 +254,6 @@ export default {
     play_audio(){
       audio =new Audio(this.audio_url)
       audio.play()
-    },
-    load_video(){
-      //this.input_video_value=e
-      return 
-    },
-    play_video(){
-      return
     },
     show_dialog_image(url_dialog_image){
       console.log(url_dialog_image)
@@ -273,7 +266,6 @@ export default {
     },
     show_dialog_video(url_dialog_video){
       this.dialog_video_options={
-          // videojs options
           width: '400px',
           height: '400px',
           muted: false,
@@ -294,9 +286,11 @@ export default {
       this.alert_visible=false
     },
     upload_file(file,type){
+      try {
       let formData = new FormData()
       formData.append('files',file)
-      axios.post( 'http://localhost:5000/ikon/v1/uploadFile',
+      
+      return axios.post('http://localhost:5000/ikon/v1/uploadFile',
       formData,
       {
         headers: {
@@ -306,17 +300,22 @@ export default {
       }
       ).then(function(res){
         if(res.data.status==200){
-          alert("File uploaded")  
           console.log(res.data.path)
+          return res.data
         }
         else{
-          alert("Error uploading file")
+          this.show_alert("Error to upload file, try again.","error")
+          return false
         }
-       
       })
       .catch(function(){
-        alert("Error uploading file")
-      });
+        this.show_alert("Error uploading file","error")
+        return false
+      });  
+      } catch (error) {
+        this.show_alert("Error uploading file","error")
+        return false
+      }
     },
     timeout(ms) { //pass a time in milliseconds to this function
     return new Promise(resolve => setTimeout(resolve, ms));
@@ -331,11 +330,26 @@ export default {
     //Get all topics
     this.list_all_topics=await this.get_all_topics()
     //Get data table
+    this.show_alert("Loading data, please wait...","info")
+    await this.timeout(2000)
+    this.show_alert("Data loaded successfully","success")
     this.table_data_cards=[
-      {id:1,topic_id:"",topic_text:"asd",text:"Module One",description:"Module init",image:"https://www.gettyimages.com.mx/gi-resources/images/500px/983794168.jpg",audio:"asd",video:"video/hello_video.mp4",meaning:""},
-      {id:2,text:"Module Two",description:"Second Module",image:"https://cdn.pixabay.com/photo/2021/08/25/20/42/field-6574455__340.jpg",audio:"asd",video:"asd",meaning:"https://fondosmil.com/fondo/11764.jpg"},
-      {id:3,text:"Module Three",description:"Otrher Module",image:"https://www.gettyimages.es/gi-resources/images/frontdoor/editorial/Velo/GettyImages-Velo-1088643550.jpg",audio:"",video:"https://www.w3school.com.cn/example/html5/mov_bbb.mp4",meaning:"http://qnimate.com/wp-content/uploads/2014/03/images2.jpg"},
+      {id:1,topic_id:"",topic_text:"PRONOMS",text:"YOU",description:"Module init",image:"https://www.gettyimages.com.mx/gi-resources/images/500px/983794168.jpg",audio:"asd",video:"video/hello_video.mp4",meaning:""},
+      {id:2,topic_id:"",topic_text:"COLORS",text:"ORANGE",description:"Second Module",image:"https://cdn.pixabay.com/photo/2021/08/25/20/42/field-6574455__340.jpg",audio:"asd",video:"asd",meaning:"https://fondosmil.com/fondo/11764.jpg"},
+      {id:3,topic_id:"",topic_text:"COLORS",text:"PURPLE",description:"Otrher Module",image:"https://www.gettyimages.es/gi-resources/images/frontdoor/editorial/Velo/GettyImages-Velo-1088643550.jpg",audio:"",video:"https://www.w3school.com.cn/example/html5/mov_bbb.mp4",meaning:"http://qnimate.com/wp-content/uploads/2014/03/images2.jpg"},
+      {id:3,topic_id:"",topic_text:"COLORS",text:"BLACK",description:"Otrher Module",image:"https://www.gettyimages.es/gi-resources/images/frontdoor/editorial/Velo/GettyImages-Velo-1088643550.jpg",audio:"",video:"https://www.w3school.com.cn/example/html5/mov_bbb.mp4",meaning:"http://qnimate.com/wp-content/uploads/2014/03/images2.jpg"},
+      {id:3,topic_id:"",topic_text:"COLORS",text:"WHITE",description:"Otrher Module",image:"https://www.gettyimages.es/gi-resources/images/frontdoor/editorial/Velo/GettyImages-Velo-1088643550.jpg",audio:"",video:"https://www.w3school.com.cn/example/html5/mov_bbb.mp4",meaning:"http://qnimate.com/wp-content/uploads/2014/03/images2.jpg"},
+      {id:3,topic_id:"",topic_text:"COLORS",text:"BLUE",description:"Otrher Module",image:"https://www.gettyimages.es/gi-resources/images/frontdoor/editorial/Velo/GettyImages-Velo-1088643550.jpg",audio:"",video:"https://www.w3school.com.cn/example/html5/mov_bbb.mp4",meaning:"http://qnimate.com/wp-content/uploads/2014/03/images2.jpg"},
+      {id:3,topic_id:"",topic_text:"COLORS",text:"YELLOW",description:"Otrher Module",image:"https://www.gettyimages.es/gi-resources/images/frontdoor/editorial/Velo/GettyImages-Velo-1088643550.jpg",audio:"",video:"https://www.w3school.com.cn/example/html5/mov_bbb.mp4",meaning:"http://qnimate.com/wp-content/uploads/2014/03/images2.jpg"},
     ]    
+  },
+  computed: {
+    filteredItems () {
+      return this.table_data_cards.filter(item => {
+         return (item.text.toLowerCase().indexOf(this.search.toLowerCase()) > -1 ||
+         item.topic_text.toLowerCase().indexOf(this.search.toLowerCase()) > -1 )
+      })
+    }
   }
 }
 </script>
