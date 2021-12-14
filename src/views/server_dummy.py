@@ -20,8 +20,8 @@ def upload_file():
     newFileName= newFileName.replace(' ','_')
     t=str(time.time())
     file.save(os.path.join('/home/luisd/Escritorio/work/IKON/ikons/public/',type_file, newFileName))
-    return jsonify({"status":200,"message": "File uploaded successfully","path": "/public/"+newFileName})
+    return jsonify({"status":200,"message": "File uploaded successfully","path": "http://localhost:8080/"+type_file+'/'+newFileName})
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True,port=9095)
 

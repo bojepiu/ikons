@@ -30,13 +30,13 @@
                 <span class="">Image<span style="color:red">*</span>: </span>
               </v-col>
               <v-col sm="4" class=" pt-0">
-                <v-file-input id="inputImage" v-model="input_image_value" append-icon="mdi-file-image" @change="load_image" dark:true></v-file-input>
+                <v-file-input v-model="input_image_value" append-icon="mdi-file-image" @change="load_image" dark:true></v-file-input>
               </v-col>
               <v-col sm="1" class="ml-3 mt-3 d-flex justify-start">
                 <span class="">Audio:</span>
               </v-col>
               <v-col sm="4" class="pt-0">
-                <v-file-input append-icon="mdi-volume-high" @change="load_audio" dark:true v-model="preview_card.audio"></v-file-input>
+                <v-file-input v-model="input_audio_value" append-icon="mdi-volume-high" dark:true ></v-file-input>
               </v-col>
             </v-row>
             <v-row>
@@ -45,19 +45,19 @@
                     <span class="ml-3">Video:</span>
                 </v-col>
                 <v-col sm="4" class="pt-0">
-                  <v-file-input append-icon="mdi-video-box" dark:true v-model="input_video_value" ></v-file-input>
+                  <v-file-input v-model="input_video_value" append-icon="mdi-video-box" dark:true></v-file-input>
                 </v-col>
                 <v-col sm="1" class="mt-4 d-flex justify-end">
                   <span class="">Meaning:</span>
                 </v-col>
                 <v-col sm="4" class="pt-0">
-                  <v-file-input append-icon="mdi-file-pdf-box" dark:true v-model="input_meaning_value"></v-file-input>
+                  <v-file-input v-model="input_meaning_value" id="inputMeaning" append-icon="mdi-file-pdf-box" dark:true></v-file-input>
                 </v-col>
               </v-row>      
             </v-row>
             <v-row>
               <v-col sm="8" class="d-flex justify-end ml-8">
-                <v-btn depressed color="primary" class="pa-4 mt-3" @click="saveRegistry(preview_card.topic_id,$event)">Save</v-btn>
+                <v-btn depressed color="primary" class="pa-4 mt-3" @click="saveRegistry($event)">Save</v-btn>
               </v-col>
               <v-col sm="3" class="d-flex justify-start">
                 <v-btn depressed color="secondary" class="pa-4 mt-3" @click="showForm();">Cancel</v-btn>  
@@ -81,9 +81,9 @@
                             <v-text-field readonly v-model="preview_card.text"></v-text-field>
                         </v-row>
                         <v-row class="d-flex justify-center">
-                            <v-icon v-if="input_audio_value!=''" medium border @click="play_audio">mdi-volume-high</v-icon> 
-                            <v-icon v-if="input_video_value!=''" medium border @click="show_alert('You can view the video after save card','warning')">mdi-video-box</v-icon> 
-                            <v-icon v-if="input_meaning_value!=''" medium border>mdi-file-pdf-box</v-icon> 
+                            <v-icon v-if="input_audio_value!='' && input_audio_value!=null" medium border >mdi-volume-high</v-icon> 
+                            <v-icon v-if="input_video_value!='' && input_video_value!=null" medium border >mdi-video-box</v-icon> 
+                            <v-icon v-if="input_meaning_value!='' && input_meaning_value!=null" medium border>mdi-file-pdf-box</v-icon> 
                         </v-row>
                     </v-card-text>
                 </v-card>
@@ -119,8 +119,8 @@
               <span v-if="row.item.meaning" @click="show_dialog_meaning(row.item.meaning)"><v-icon border>mdi-file-pdf-box</v-icon></span>
             </td>            
             <td>
-              <v-icon medium border>mdi-pencil-outline</v-icon> 
-              <v-icon medium border>mdi-trash-can-outline</v-icon> 
+              <v-icon medium border @click="edit_registry(row.item.id)">mdi-pencil-outline</v-icon> 
+              <v-icon medium border @click="delete_registry(row.item.id)">mdi-trash-can-outline</v-icon> 
             </td>
           </tr>
       </template>
@@ -135,12 +135,12 @@ import axios from 'axios'
 import DialogMeaning from '../components/DialogMeaning.vue'
 import DialogImage from '../components/DialogImage.vue'
 import DialogVideo from '../components/DialogVideo.vue'
+import Card from '../Class/Card.js'
 
 var audio=new Audio()
-// var new_card={id:0,text:"",image:"",audio:"",video:"",meaning:""}
+
 export default {
   components: { DialogMeaning,DialogImage,DialogVideo },
-  //Validar como funciona al montar para validar sesion valida 
   data(){
   return{
     expand: false,
@@ -166,37 +166,33 @@ export default {
     table_data_cards:[],
     //FORM SECTION
     list_all_topics:[],
-    preview_card:{id:0,topic_id:0,topic_text:"",text:"",image:undefined,audio:undefined,video:undefined,meaning:undefined},
+    preview_card:new Card(),
     input_image_value:[],
     input_audio_value:[],
     input_video_value:[],
     input_meaning_value:[],
-    image_url:"404notfoundimage.png",
-    audio_url:"",
-    video_url:"",
-    meaning_url:"",
     //ALERT
     alert_visible:false,
     alert_type:"success",
     alert_text:"",
+    image_url:"404notfoundimage.png",
   }
   },
   methods:{
-    async get_all_topics(){
-      return await axios.get('http://localhost:5000/ikon/v1/topic/getall').then(response=>{
-        return response.data
-      })
-    },
     showForm() {
       this.expand = !this.expand
       if(this.expand){this.icon_new='mdi-minus'}
       else{this.icon_new='mdi-plus'}
     },
-    async saveRegistry(id=0,e){
+    async get_all_topics(){
+      return await axios.get('http://localhost:9095/ikon/v1/topic/getall').then(response=>{
+        return response.data
+      }).catch(error=>{
+        this.show_alert("Error: "+error,"error")
+      })
+    },
+    async saveRegistry(e){
       e.preventDefault()
-      if(id==0){
-        this.preview_card.topic_id=0
-      }
       if(this.preview_card.topic_text==""){
         this.show_alert("Topic not found in card","warning")
         return
@@ -205,21 +201,55 @@ export default {
         this.show_alert("Text not found in card","warning")
         return
       }
-      if(this.preview_card.image=="" || this.image_url=="404notfoundimage.png"){
+      if(this.preview_card.image==""){
         this.show_alert("Image not found in card","warning")
         return
       }
-      if (!await this.upload_file(this.input_image_value,'images')){return}
-      if(this.input_audio_value!=''){
-        if(!await this.upload_file(this.input_audio_value,'audio')){return}
+      if(this.preview_card.image=="IMAGE PENDING UPLOAD"){
+        let img=await this.upload_file(this.input_image_value,'images')
+        if(!img){return}
+        else{this.preview_card.image=img.path}  
       }
-      if(this.input_video_value!=''){
-        if(!await this.upload_file(this.input_video_value,'video')){return}
+      if(this.input_audio_value!='' && this.input_audio_value!=null){
+        if(this.preview_card.audio==""){
+          let mp3=await this.upload_file(this.input_audio_value,'audio')
+          if(!mp3){return}
+          else{this.preview_card.audio=mp3.path} 
+        }
+      }else{
+        this.preview_card.audio=""
       }
-      if(this.input_meaning_value!=''){
-        if(!await this.upload_file(this.input_meaning_value,'meaning')){return}
+      if(this.input_video_value!='' && this.input_video_value!=null){
+        if(this.preview_card.video==""){
+          let mp4=await this.upload_file(this.input_video_value,'video')
+          if(!mp4){return}
+          else{this.preview_card.video=mp4.path} 
+        }
+      }else{
+        this.preview_card.video=""
+      }
+      if(this.input_meaning_value!='' && this.input_meaning_value!=null){
+        if(this.preview_card.meaning==""){
+          let pdf=await this.upload_file(this.input_meaning_value,'pdf')
+          if(!pdf){return}
+          else{this.preview_card.meaning=pdf.path} 
+        }
+      }else{
+        this.preview_card.meaning=""
       }
       this.show_alert("Card saved successfully","success")
+      alert(JSON.stringify(this.preview_card))
+      this.table_data_cards.push(this.preview_card)
+      let a=this.preview_card.topic_id
+      let b=this.preview_card.topic_text
+      this.preview_card=new Card()
+      this.preview_card.topic_id=a
+      this.preview_card.topic_text=b
+      this.image_url="404notfoundimage.png"
+      this.input_image_value=[]
+      this.input_audio_value=[]
+      this.input_video_value=[]
+      this.input_meaning_value=[]
       return
     },
     select_topic(e){
@@ -233,8 +263,8 @@ export default {
       }
     },
     load_image(e){    
-      if(e==null){
-        this.preview_card.image=undefined
+      if(e==null || e==undefined){
+        this.preview_card.image=""
         this.image_url="404notfoundimage.png"
         return
       }    
@@ -243,13 +273,9 @@ export default {
         this.input_image_value=[] 
       }
       else{
-        this.preview_card.image=e
+        this.preview_card.image="IMAGE PENDING UPLOAD"
         this.image_url= URL.createObjectURL(this.input_image_value)
       }
-    },
-    load_audio(){
-      this.input_audio_value=this.preview_card.audio
-      this.audio_url=URL.createObjectURL(this.preview_card.audio)    
     },
     play_audio(){
       audio =new Audio(this.audio_url)
@@ -290,7 +316,7 @@ export default {
       let formData = new FormData()
       formData.append('files',file)
       
-      return axios.post('http://localhost:5000/ikon/v1/uploadFile',
+      return axios.post('http://localhost:9095/ikon/v1/uploadFile',
       formData,
       {
         headers: {
@@ -324,9 +350,35 @@ export default {
       this.dialog_meaning_visible=true
       this.dialog_meaning_url=url_dialog_meaning
     },
+    edit_registry(id){
+      this.table_data_cards.forEach(element => {
+        if(element.id==id){
+          this.input_image_value=[]
+          this.input_audio_value=[]
+          this.input_video_value=[]
+          this.input_meaning_value=[]
+          this.preview_card=element
+          this.image_url=element.image
+          this.input_image_value=new File([element.image],element.image.split('/').pop())
+          if(element.audio!=''){
+            this.input_audio_value=new File([element.audio],element.audio.split('/').pop())
+          }
+          if(element.video!='')
+          this.input_video_value=new File([element.video],element.video.split('/').pop())
+          if(element.meaning!='')
+          this.input_meaning_value=new File([element.meaning],element.meaning.split('/').pop())
+          if(!this.expand)this.showForm()
+          return 
+        }
+      });
+    },
+    delete_registry(id){
+      alert('se elimina '+id)
+    },
   },
   //First function to run
   async created(){
+    this.preview_card.topic_text="Select Topic"
     //Get all topics
     this.list_all_topics=await this.get_all_topics()
     //Get data table
@@ -334,19 +386,20 @@ export default {
     await this.timeout(2000)
     this.show_alert("Data loaded successfully","success")
     this.table_data_cards=[
-      {id:1,topic_id:"",topic_text:"PRONOMS",text:"YOU",description:"Module init",image:"https://www.gettyimages.com.mx/gi-resources/images/500px/983794168.jpg",audio:"asd",video:"video/hello_video.mp4",meaning:""},
-      {id:2,topic_id:"",topic_text:"COLORS",text:"ORANGE",description:"Second Module",image:"https://cdn.pixabay.com/photo/2021/08/25/20/42/field-6574455__340.jpg",audio:"asd",video:"asd",meaning:"https://fondosmil.com/fondo/11764.jpg"},
-      {id:3,topic_id:"",topic_text:"COLORS",text:"PURPLE",description:"Otrher Module",image:"https://www.gettyimages.es/gi-resources/images/frontdoor/editorial/Velo/GettyImages-Velo-1088643550.jpg",audio:"",video:"https://www.w3school.com.cn/example/html5/mov_bbb.mp4",meaning:"http://qnimate.com/wp-content/uploads/2014/03/images2.jpg"},
-      {id:3,topic_id:"",topic_text:"COLORS",text:"BLACK",description:"Otrher Module",image:"https://www.gettyimages.es/gi-resources/images/frontdoor/editorial/Velo/GettyImages-Velo-1088643550.jpg",audio:"",video:"https://www.w3school.com.cn/example/html5/mov_bbb.mp4",meaning:"http://qnimate.com/wp-content/uploads/2014/03/images2.jpg"},
-      {id:3,topic_id:"",topic_text:"COLORS",text:"WHITE",description:"Otrher Module",image:"https://www.gettyimages.es/gi-resources/images/frontdoor/editorial/Velo/GettyImages-Velo-1088643550.jpg",audio:"",video:"https://www.w3school.com.cn/example/html5/mov_bbb.mp4",meaning:"http://qnimate.com/wp-content/uploads/2014/03/images2.jpg"},
-      {id:3,topic_id:"",topic_text:"COLORS",text:"BLUE",description:"Otrher Module",image:"https://www.gettyimages.es/gi-resources/images/frontdoor/editorial/Velo/GettyImages-Velo-1088643550.jpg",audio:"",video:"https://www.w3school.com.cn/example/html5/mov_bbb.mp4",meaning:"http://qnimate.com/wp-content/uploads/2014/03/images2.jpg"},
-      {id:3,topic_id:"",topic_text:"COLORS",text:"YELLOW",description:"Otrher Module",image:"https://www.gettyimages.es/gi-resources/images/frontdoor/editorial/Velo/GettyImages-Velo-1088643550.jpg",audio:"",video:"https://www.w3school.com.cn/example/html5/mov_bbb.mp4",meaning:"http://qnimate.com/wp-content/uploads/2014/03/images2.jpg"},
+      {id:1,topic_id:1,topic_text:"PRONOMS",text:"YOU",description:"Module init",image:"https://www.gettyimages.com.mx/gi-resources/images/500px/983794168.jpg",audio:"https://www.loquesea/asd.mp3",video:"video/hello_video.mp4",meaning:""},
+      {id:2,topic_id:2,topic_text:"COLORS",text:"ORANGE",description:"Second Module",image:"https://cdn.pixabay.com/photo/2021/08/25/20/42/field-6574455__340.jpg",audio:"https://www.loquesea/asd.mp3",video:"http://www.loquesea/asd",meaning:"https://fondosmil.com/fondo/11764.jpg"},
+      {id:3,topic_id:2,topic_text:"COLORS",text:"PURPLE",description:"Otrher Module",image:"https://www.gettyimages.es/gi-resources/images/frontdoor/editorial/Velo/GettyImages-Velo-1088643550.jpg",audio:"https://www.loquesea/asd.mp3",video:"https://www.w3school.com.cn/example/html5/mov_bbb.mp4",meaning:"http://qnimate.com/wp-content/uploads/2014/03/images2.jpg"},
+      {id:4,topic_id:2,topic_text:"COLORS",text:"BLACK",description:"Otrher Module",image:"https://www.gettyimages.es/gi-resources/images/frontdoor/editorial/Velo/GettyImages-Velo-1088643550.jpg",audio:"",video:"https://www.w3school.com.cn/example/html5/mov_bbb.mp4",meaning:"http://qnimate.com/wp-content/uploads/2014/03/images2.jpg"},
+      {id:5,topic_id:2,topic_text:"COLORS",text:"WHITE",description:"Otrher Module",image:"https://www.gettyimages.es/gi-resources/images/frontdoor/editorial/Velo/GettyImages-Velo-1088643550.jpg",audio:"",video:"https://www.w3school.com.cn/example/html5/mov_bbb.mp4",meaning:"http://qnimate.com/wp-content/uploads/2014/03/images2.jpg"},
+      {id:6,topic_id:2,topic_text:"COLORS",text:"BLUE",description:"Otrher Module",image:"https://www.gettyimages.es/gi-resources/images/frontdoor/editorial/Velo/GettyImages-Velo-1088643550.jpg",audio:"",video:"https://www.w3school.com.cn/example/html5/mov_bbb.mp4",meaning:"http://qnimate.com/wp-content/uploads/2014/03/images2.jpg"},
+      {id:7,topic_id:2,topic_text:"COLORS",text:"YELLOW",description:"Otrher Module",image:"https://www.gettyimages.es/gi-resources/images/frontdoor/editorial/Velo/GettyImages-Velo-1088643550.jpg",audio:"",video:"https://www.w3school.com.cn/example/html5/mov_bbb.mp4",meaning:"http://qnimate.com/wp-content/uploads/2014/03/images2.jpg"},
     ]    
   },
   computed: {
     filteredItems () {
       return this.table_data_cards.filter(item => {
          return (item.text.toLowerCase().indexOf(this.search.toLowerCase()) > -1 ||
+         item.id.toString().indexOf(this.search.toLowerCase()) > -1 ||
          item.topic_text.toLowerCase().indexOf(this.search.toLowerCase()) > -1 )
       })
     }
