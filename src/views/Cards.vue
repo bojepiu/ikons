@@ -16,7 +16,7 @@
                 <span>Topic<span style="color:red">*</span>:</span>
               </v-col>
               <v-col sm="4">
-                <v-combobox :items="list_all_topics" item-value="cveTopic" item-text="topicName" @change="select_topic"></v-combobox>
+                <v-select  v-model="selected" :items="list_all_topics" item-value="cveTopic" item-text="topicName" @change="select_topic"></v-select>
               </v-col>
               <v-col sm="1" class="mt-8 ml-2  d-flex justify-end">
                 <span class="">Text<span style="color:red">*</span>:</span>
@@ -137,6 +137,7 @@ import DialogImage from '../components/DialogImage.vue'
 import DialogVideo from '../components/DialogVideo.vue'
 import Card from '../Class/Card.js'
 
+var P=process.env
 var audio=new Audio()
 
 export default {
@@ -144,6 +145,7 @@ export default {
   data(){
   return{
     expand: false,
+    selected:{},
     icon_new:'mdi-plus',
     //DIALOGS SECTION
     dialog_image_visible:false,
@@ -185,7 +187,8 @@ export default {
       else{this.icon_new='mdi-plus'}
     },
     async get_all_topics(){
-      return await axios.get('http://localhost:9095/ikon/v1/topic/getall').then(response=>{
+      return await axios.get(P.VUE_APP_SERVER_HOST+":"+P.VUE_APP_SERVER_PORT+
+      P.VUE_APP_ROUTE_GET_ALL_TOPIC).then(response=>{
         return response.data
       }).catch(error=>{
         this.show_alert("Error: "+error,"error")
@@ -205,6 +208,7 @@ export default {
         this.show_alert("Image not found in card","warning")
         return
       }
+      
       if(this.preview_card.image=="IMAGE PENDING UPLOAD"){
         let img=await this.upload_file(this.input_image_value,'images')
         if(!img){return}
@@ -253,14 +257,12 @@ export default {
       return
     },
     select_topic(e){
-      if(e.cveTopic==undefined){
-      this.preview_card.topic_id=0
-      this.preview_card.topic_text=e
-      }
-      else{
-        this.preview_card.topic_id=e.cveTopic
-        this.preview_card.topic_text=e.topicName
-      }
+      this.preview_card.topic_id=e
+      this.list_all_topics.forEach(element => {
+        if(element.cveTopic==e){
+          this.preview_card.topic_text=element.topicName
+        }
+      })
     },
     load_image(e){    
       if(e==null || e==undefined){
@@ -308,15 +310,16 @@ export default {
       this.alert_visible=true
       this.alert_type=type_msg
       this.alert_text=s      
-      await this.timeout(3000)
-      this.alert_visible=false
+      this.timeout(3000).then(()=>{
+        this.alert_visible=false
+      })
     },
     upload_file(file,type){
       try {
       let formData = new FormData()
       formData.append('files',file)
-      
-      return axios.post('http://localhost:9095/ikon/v1/uploadFile',
+      return axios.post(P.VUE_APP_SERVER_HOST+":"+P.VUE_APP_SERVER_PORT+
+      P.VUE_APP_ROUTE_UPLOAD_FILE,
       formData,
       {
         headers: {
@@ -351,6 +354,7 @@ export default {
       this.dialog_meaning_url=url_dialog_meaning
     },
     edit_registry(id){
+      document.body.scrollTop = document.documentElement.scrollTop = 0;
       this.table_data_cards.forEach(element => {
         if(element.id==id){
           this.input_image_value=[]
@@ -358,6 +362,7 @@ export default {
           this.input_video_value=[]
           this.input_meaning_value=[]
           this.preview_card=element
+          this.selected={cveTopic:element.topic_id,topicName:element.topic_text}
           this.image_url=element.image
           this.input_image_value=new File([element.image],element.image.split('/').pop())
           if(element.audio!=''){

@@ -8,7 +8,7 @@ CORS(app)
 
 @app.route('/ikon/v1/topic/getall',methods=['GET'])
 def get_all_topics():
-    return jsonify([{"cveTopic": 9,"topicName": "COLORS"},{"cveTopic": 7,"topicName": "GERUNDIO"},{"cveTopic": 5,"topicName": "OBJECT PRONOUN"},{"cveTopic": 1,"topicName": "SUBJECT PRONOUN"},{"cveTopic": 8,"topicName": "TIME"},{"cveTopic": 6,"topicName": "VERB TO BE"}])
+    return jsonify([{"cveTopic": 1,"topicName": "PRONOMS"},{"cveTopic": 2,"topicName": "COLORS"},{"cveTopic": 3,"topicName": "OBJECT PRONOUN"},{"cveTopic": 6,"topicName": "SUBJECT PRONOUN"},{"cveTopic": 4,"topicName": "TIME"},{"cveTopic": 5,"topicName": "VERB TO BE"}])
 
 @app.route('/ikon/v1/uploadFile',methods=['POST'])
 def upload_file():
