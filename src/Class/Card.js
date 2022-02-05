@@ -1,14 +1,13 @@
 export default class Card {
   constructor() {
-    this.id=0
-    this.topic_id=0
-    this.topic_text=""
-    this.text=""
-    this.image=""
-    this.audio=""
-    this.video=""
-    this.meaning=""
-  }
-    
+    this.cveCard=0
+    this.cveTopic=0
+    this.topicName=""
+    this.cardText=""
+    this.pathImage=""
+    this.pathSound=""
+    this.pathVideo=""
+    this.pathMeaning=""
+  } 
 }
 

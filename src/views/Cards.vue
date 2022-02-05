@@ -7,7 +7,7 @@
     <v-expand-transition>
       <div v-show="expand">
         <v-row class="pt-5">
-            <h4>Create a new Card</h4>
+            <h4>Create new Card</h4>
         </v-row>
         <v-row>
           <v-col sm=8 class="ml-0">
@@ -16,7 +16,7 @@
                 <span>Topic<span style="color:red">*</span>:</span>
               </v-col>
               <v-col sm="4">
-                <v-select  v-model="selected" :items="list_all_topics" item-value="cveTopic" item-text="topicName" @change="select_topic"></v-select>
+                <v-combobox v-model="selected.topicName" :items="list_all_topics" item-value="cveTopic" item-text="topicName" @change="select_topic"></v-combobox>
               </v-col>
               <v-col sm="1" class="mt-8 ml-2  d-flex justify-end">
                 <span class="">Text<span style="color:red">*</span>:</span>
@@ -57,26 +57,24 @@
             </v-row>
             <v-row>
               <v-col sm="8" class="d-flex justify-end ml-8">
-                <v-btn depressed color="primary" class="pa-4 mt-3" @click="saveRegistry($event)">Save</v-btn>
+                <v-btn depressed color="primary" class="pa-4 mt-3" @click="saveRegistry($event)">{{text_btn_save}}</v-btn>
               </v-col>
               <v-col sm="3" class="d-flex justify-start">
-                <v-btn depressed color="secondary" class="pa-4 mt-3" @click="showForm();">Cancel</v-btn>  
+                <v-btn depressed color="secondary" class="pa-4 mt-3" @click="cancelRegistry()">Cancel</v-btn>  
               </v-col>
               </v-row>
           </v-col>
           <v-col sm="4">
-                <v-card elevation="2" width="200" height="255">
+                <v-card elevation="2" max-width="300" height="280">
                     <v-card-title class="justify-center">{{preview_card.topic_text}}</v-card-title>
                     <v-card-text class="justify-center">
-                        <v-row>
                         <v-img
                         contain
-                        max-height="90"
-                        max-width="170"
+                        max-height="120"
+                        max-width="200"
                         :src="image_url"
-                        class="ml-4"
+                        class="mx-auto"
                         ></v-img>
-                        </v-row>
                         <v-row>
                             <v-text-field readonly v-model="preview_card.text"></v-text-field>
                         </v-row>
@@ -146,6 +144,7 @@ export default {
   return{
     expand: false,
     selected:{},
+    text_btn_save:'Save',
     icon_new:'mdi-plus',
     //DIALOGS SECTION
     dialog_image_visible:false,
@@ -196,24 +195,27 @@ export default {
     },
     async saveRegistry(e){
       e.preventDefault()
-      if(this.preview_card.topic_text==""){
+      if(this.preview_card.topic_text=="" || this.preview_card.topic_text=="Select Topic"){
         this.show_alert("Topic not found in card","warning")
         return
       }
+      console.log('topic')
       if(this.preview_card.text==""){
         this.show_alert("Text not found in card","warning")
         return
       }
+      console.log('text')
       if(this.preview_card.image==""){
         this.show_alert("Image not found in card","warning")
         return
       }
-      
+      console.log('image')
       if(this.preview_card.image=="IMAGE PENDING UPLOAD"){
         let img=await this.upload_file(this.input_image_value,'images')
         if(!img){return}
         else{this.preview_card.image=img.path}  
       }
+      console.log('image_uploaded')
       if(this.input_audio_value!='' && this.input_audio_value!=null){
         if(this.preview_card.audio==""){
           let mp3=await this.upload_file(this.input_audio_value,'audio')
@@ -223,6 +225,7 @@ export default {
       }else{
         this.preview_card.audio=""
       }
+      console.log('audio_uploaded')
       if(this.input_video_value!='' && this.input_video_value!=null){
         if(this.preview_card.video==""){
           let mp4=await this.upload_file(this.input_video_value,'video')
@@ -232,37 +235,66 @@ export default {
       }else{
         this.preview_card.video=""
       }
+      console.log('video_uploaded')
       if(this.input_meaning_value!='' && this.input_meaning_value!=null){
+        console.log('meaning_validation')
         if(this.preview_card.meaning==""){
-          let pdf=await this.upload_file(this.input_meaning_value,'pdf')
+          let pdf=await this.upload_file(this.input_meaning_value,'meaning')
           if(!pdf){return}
           else{this.preview_card.meaning=pdf.path} 
         }
       }else{
         this.preview_card.meaning=""
       }
-      this.show_alert("Card saved successfully","success")
+      console.log('meaning_uploaded')
       alert(JSON.stringify(this.preview_card))
+      if(this.preview_card.topic_id==0){
+        await this.load_topics()
+      }
+      this.show_alert("Card saved successfully","success")
       this.table_data_cards.push(this.preview_card)
       let a=this.preview_card.topic_id
       let b=this.preview_card.topic_text
       this.preview_card=new Card()
-      this.preview_card.topic_id=a
-      this.preview_card.topic_text=b
+      if(a!=0){
+        this.preview_card.topic_id=a
+        this.preview_card.topic_text=b
+      }else{
+        this.list_all_topics.forEach(element => {
+          if(element.topicName==b){
+            this.preview_card.topic_id=element.cveTopic
+            this.preview_card.topic_text=element.topicName
+          }
+        });
+      }
       this.image_url="404notfoundimage.png"
       this.input_image_value=[]
       this.input_audio_value=[]
       this.input_video_value=[]
       this.input_meaning_value=[]
+      this.text_btn_save='Save'
       return
     },
+    cancelRegistry(){
+      this.preview_card=new Card()
+      this.selected={}
+      this.preview_card.topic_text="Select Topic"
+      this.image_url="404notfoundimage.png"
+      this.input_image_value=[]
+      this.input_audio_value=[]
+      this.input_video_value=[]
+      this.input_meaning_value=[]
+      this.text_btn_save='Save'
+      this.showForm()
+    },
     select_topic(e){
-      this.preview_card.topic_id=e
-      this.list_all_topics.forEach(element => {
-        if(element.cveTopic==e){
-          this.preview_card.topic_text=element.topicName
-        }
-      })
+      if(e.cveTopic==undefined){
+        this.preview_card.topic_text=e
+        this.preview_card.topic_id=0
+        return
+      }
+      this.preview_card.topic_id=e.cveTopic
+      this.preview_card.topic_text=e.topicName
     },
     load_image(e){    
       if(e==null || e==undefined){
@@ -314,6 +346,9 @@ export default {
         this.alert_visible=false
       })
     },
+    async load_topics(){
+      this.list_all_topics=await this.get_all_topics()
+    },
     upload_file(file,type){
       try {
       let formData = new FormData()
@@ -357,6 +392,7 @@ export default {
       document.body.scrollTop = document.documentElement.scrollTop = 0;
       this.table_data_cards.forEach(element => {
         if(element.id==id){
+          this.text_btn_save="Update"
           this.input_image_value=[]
           this.input_audio_value=[]
           this.input_video_value=[]
@@ -385,19 +421,19 @@ export default {
   async created(){
     this.preview_card.topic_text="Select Topic"
     //Get all topics
-    this.list_all_topics=await this.get_all_topics()
+    this.load_topics()
     //Get data table
     this.show_alert("Loading data, please wait...","info")
     await this.timeout(2000)
     this.show_alert("Data loaded successfully","success")
     this.table_data_cards=[
-      {id:1,topic_id:1,topic_text:"PRONOMS",text:"YOU",description:"Module init",image:"https://www.gettyimages.com.mx/gi-resources/images/500px/983794168.jpg",audio:"https://www.loquesea/asd.mp3",video:"video/hello_video.mp4",meaning:""},
-      {id:2,topic_id:2,topic_text:"COLORS",text:"ORANGE",description:"Second Module",image:"https://cdn.pixabay.com/photo/2021/08/25/20/42/field-6574455__340.jpg",audio:"https://www.loquesea/asd.mp3",video:"http://www.loquesea/asd",meaning:"https://fondosmil.com/fondo/11764.jpg"},
-      {id:3,topic_id:2,topic_text:"COLORS",text:"PURPLE",description:"Otrher Module",image:"https://www.gettyimages.es/gi-resources/images/frontdoor/editorial/Velo/GettyImages-Velo-1088643550.jpg",audio:"https://www.loquesea/asd.mp3",video:"https://www.w3school.com.cn/example/html5/mov_bbb.mp4",meaning:"http://qnimate.com/wp-content/uploads/2014/03/images2.jpg"},
-      {id:4,topic_id:2,topic_text:"COLORS",text:"BLACK",description:"Otrher Module",image:"https://www.gettyimages.es/gi-resources/images/frontdoor/editorial/Velo/GettyImages-Velo-1088643550.jpg",audio:"",video:"https://www.w3school.com.cn/example/html5/mov_bbb.mp4",meaning:"http://qnimate.com/wp-content/uploads/2014/03/images2.jpg"},
-      {id:5,topic_id:2,topic_text:"COLORS",text:"WHITE",description:"Otrher Module",image:"https://www.gettyimages.es/gi-resources/images/frontdoor/editorial/Velo/GettyImages-Velo-1088643550.jpg",audio:"",video:"https://www.w3school.com.cn/example/html5/mov_bbb.mp4",meaning:"http://qnimate.com/wp-content/uploads/2014/03/images2.jpg"},
-      {id:6,topic_id:2,topic_text:"COLORS",text:"BLUE",description:"Otrher Module",image:"https://www.gettyimages.es/gi-resources/images/frontdoor/editorial/Velo/GettyImages-Velo-1088643550.jpg",audio:"",video:"https://www.w3school.com.cn/example/html5/mov_bbb.mp4",meaning:"http://qnimate.com/wp-content/uploads/2014/03/images2.jpg"},
-      {id:7,topic_id:2,topic_text:"COLORS",text:"YELLOW",description:"Otrher Module",image:"https://www.gettyimages.es/gi-resources/images/frontdoor/editorial/Velo/GettyImages-Velo-1088643550.jpg",audio:"",video:"https://www.w3school.com.cn/example/html5/mov_bbb.mp4",meaning:"http://qnimate.com/wp-content/uploads/2014/03/images2.jpg"},
+      {id:1,topic_id:1,topic_text:"PRONOMS",text:"YOU",image:"https://www.gettyimages.com.mx/gi-resources/images/500px/983794168.jpg",audio:"https://www.loquesea/asd.mp3",video:"video/hello_video.mp4",meaning:""},
+      {id:2,topic_id:2,topic_text:"COLORS",text:"ORANGE",image:"https://cdn.pixabay.com/photo/2021/08/25/20/42/field-6574455__340.jpg",audio:"https://www.loquesea/asd.mp3",video:"http://www.loquesea/asd",meaning:"https://fondosmil.com/fondo/11764.jpg"},
+      {id:3,topic_id:2,topic_text:"COLORS",text:"PURPLE",image:"https://www.gettyimages.es/gi-resources/images/frontdoor/editorial/Velo/GettyImages-Velo-1088643550.jpg",audio:"https://www.loquesea/asd.mp3",video:"https://www.w3school.com.cn/example/html5/mov_bbb.mp4",meaning:"http://qnimate.com/wp-content/uploads/2014/03/images2.jpg"},
+      {id:4,topic_id:2,topic_text:"COLORS",text:"BLACK",image:"https://www.gettyimages.es/gi-resources/images/frontdoor/editorial/Velo/GettyImages-Velo-1088643550.jpg",audio:"",video:"https://www.w3school.com.cn/example/html5/mov_bbb.mp4",meaning:"http://qnimate.com/wp-content/uploads/2014/03/images2.jpg"},
+      {id:5,topic_id:2,topic_text:"COLORS",text:"WHITE",image:"https://www.gettyimages.es/gi-resources/images/frontdoor/editorial/Velo/GettyImages-Velo-1088643550.jpg",audio:"",video:"https://www.w3school.com.cn/example/html5/mov_bbb.mp4",meaning:"http://qnimate.com/wp-content/uploads/2014/03/images2.jpg"},
+      {id:6,topic_id:2,topic_text:"COLORS",text:"BLUE",image:"https://www.gettyimages.es/gi-resources/images/frontdoor/editorial/Velo/GettyImages-Velo-1088643550.jpg",audio:"",video:"https://www.w3school.com.cn/example/html5/mov_bbb.mp4",meaning:"http://qnimate.com/wp-content/uploads/2014/03/images2.jpg"},
+      {id:7,topic_id:2,topic_text:"COLORS",text:"YELLOW",image:"https://www.gettyimages.es/gi-resources/images/frontdoor/editorial/Velo/GettyImages-Velo-1088643550.jpg",audio:"",video:"https://www.w3school.com.cn/example/html5/mov_bbb.mp4",meaning:"http://qnimate.com/wp-content/uploads/2014/03/images2.jpg"},
     ]    
   },
   computed: {

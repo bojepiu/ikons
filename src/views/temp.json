@@ -1,0 +1,19 @@
+{
+    "sessionId": 1,
+    "sessionName": "Session 1",
+    "sessionDescription": "Session 1 Description",
+    "arraySentences":[
+    {
+        "sentenceId": "1",
+        "sentenceText": "Кар2"
+    },
+    {
+        "id:": "2",
+        "sentenceText": "How do you turn this on"
+    },
+    {
+        "id": "3",
+        "sentenceText": "Кар3"
+    }
+    ]
+}
