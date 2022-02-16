@@ -135,6 +135,9 @@ import DialogImage from '../components/DialogImage.vue'
 import DialogVideo from '../components/DialogVideo.vue'
 import Card from '../Class/Card.js'
 
+axios.defaults.headers.common['Access-Control-Allow-Origin'] = '*';
+
+
 var P=process.env
 var audio=new Audio()
 
@@ -186,8 +189,9 @@ export default {
       else{this.icon_new='mdi-plus'}
     },
     async get_all_topics(){
+      console.log(P.VUE_APP_SERVER_HOST+":"+P.VUE_APP_SERVER_PORT+P.VUE_APP_GET_ALL_TOPICS)
       return await axios.get(P.VUE_APP_SERVER_HOST+":"+P.VUE_APP_SERVER_PORT+
-      P.VUE_APP_ROUTE_GET_ALL_TOPIC).then(response=>{
+      P.VUE_APP_GET_ALL_TOPICS).then(response=>{
         return response.data
       }).catch(error=>{
         this.show_alert("Error: "+error,"error")
@@ -353,8 +357,7 @@ export default {
       try {
       let formData = new FormData()
       formData.append('files',file)
-      return axios.post(P.VUE_APP_SERVER_HOST+":"+P.VUE_APP_SERVER_PORT+
-      P.VUE_APP_ROUTE_UPLOAD_FILE,
+      return axios.post(P.VUE_APP_SERVER_HOST+":"+P.VUE_APP_SERVER_PORT+P.VUE_APP_UPLOAD_FILE,
       formData,
       {
         headers: {

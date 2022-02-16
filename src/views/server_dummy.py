@@ -40,7 +40,6 @@ def get_all_topics():
 def upload_file():
     file = request.files['files']
     type_file = request.headers.get('X-type')
-    print(type_file)
     filename = file.filename
     newFileName = filename.split('.')[0] + '_' + str(int(time.time())) + '.' + filename.split('.')[1]
     newFileName= newFileName.replace(' ','_')
