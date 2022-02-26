@@ -1,5 +1,6 @@
 <template>
   <v-container>
+    <!-- REVISAR QUE ONDA CON EL MESSAGE UNDEFINED -->
     <div class="d-flex justify-center" style="top:0; left:0; width:100vw;position:absolute;">
     <v-alert :value="alert_visible==true" :type="alert_type" dark  
     transition="scale-transition" dismissible v-on:click="alert_visible=false">{{alert_text}}</v-alert>
@@ -22,7 +23,7 @@
                 <span class="">Text<span style="color:red">*</span>:</span>
               </v-col>
               <v-col sm="4" class="ml-3">
-                <v-text-field v-model="preview_card.text"></v-text-field>
+                <v-text-field v-model="preview_card.cardText"></v-text-field>
               </v-col>
             </v-row>
             <v-row>
@@ -66,7 +67,7 @@
           </v-col>
           <v-col sm="4">
                 <v-card elevation="2" max-width="300" height="280">
-                    <v-card-title class="justify-center">{{preview_card.topic_text}}</v-card-title>
+                    <v-card-title class="justify-center">{{preview_card.topicName}}</v-card-title>
                     <v-card-text class="justify-center">
                         <v-img
                         contain
@@ -76,7 +77,7 @@
                         class="mx-auto"
                         ></v-img>
                         <v-row>
-                            <v-text-field readonly v-model="preview_card.text"></v-text-field>
+                            <v-text-field readonly v-model="preview_card.cardText"></v-text-field>
                         </v-row>
                         <v-row class="d-flex justify-center">
                             <v-icon v-if="input_audio_value!='' && input_audio_value!=null" medium border >mdi-volume-high</v-icon> 
@@ -107,18 +108,18 @@
     <v-data-table :headers="headers" :items="filteredItems" :items-per-page="10" class="elevation-2">
       <template v-slot:item="row">
           <tr>
-            <td>{{row.item.id}}</td>
-            <td>{{row.item.topic_text}}</td>
-            <td>{{row.item.text}}</td>
+            <td>{{row.item.cveCard}}</td>
+            <td>{{row.item.topicName}}</td>
+            <td>{{row.item.cardText}}</td>
             <td>
-              <span v-if="row.item.image" @click="show_dialog_image(row.item.image)"><v-icon border>mdi-image-album</v-icon> </span>
-              <span v-if="row.item.audio"><v-icon  border>mdi-volume-high</v-icon> </span>
-              <span v-if="row.item.video" @click="show_dialog_video(row.item.video)"><v-icon  border>mdi-video-box</v-icon> </span>
-              <span v-if="row.item.meaning" @click="show_dialog_meaning(row.item.meaning)"><v-icon border>mdi-file-pdf-box</v-icon></span>
+              <span v-if="row.item.pathImage" @click="show_dialog_image(row.item.pathImage)"><v-icon border>mdi-image-album</v-icon> </span>
+              <span v-if="row.item.pathSound"><v-icon  border>mdi-volume-high</v-icon> </span>
+              <span v-if="row.item.pathVideo" @click="show_dialog_video(row.item.pathVideo)"><v-icon  border>mdi-video-box</v-icon> </span>
+              <span v-if="row.item.pathMeaning" @click="show_dialog_meaning(row.item.pathMeaning)"><v-icon border>mdi-file-pdf-box</v-icon></span>
             </td>            
             <td>
-              <v-icon medium border @click="edit_registry(row.item.id)">mdi-pencil-outline</v-icon> 
-              <v-icon medium border @click="delete_registry(row.item.id)">mdi-trash-can-outline</v-icon> 
+              <v-icon medium border @click="edit_registry(row.item.cveCard)">mdi-pencil-outline</v-icon> 
+              <v-icon medium border @click="delete_registry(row.item.cveCard)">mdi-trash-can-outline</v-icon> 
             </td>
           </tr>
       </template>
@@ -199,75 +200,84 @@ export default {
     },
     async saveRegistry(e){
       e.preventDefault()
-      if(this.preview_card.topic_text=="" || this.preview_card.topic_text=="Select Topic"){
+      if(this.preview_card.topicName=="" || this.preview_card.topicName=="Select Topic"){
         this.show_alert("Topic not found in card","warning")
         return
       }
       console.log('topic')
-      if(this.preview_card.text==""){
+      if(this.preview_card.cardText==""){
         this.show_alert("Text not found in card","warning")
         return
       }
       console.log('text')
-      if(this.preview_card.image==""){
+      if(this.preview_card.pathImage==""){
         this.show_alert("Image not found in card","warning")
         return
       }
       console.log('image')
-      if(this.preview_card.image=="IMAGE PENDING UPLOAD"){
+      if(this.preview_card.pathImage=="IMAGE PENDING UPLOAD"){
         let img=await this.upload_file(this.input_image_value,'images')
         if(!img){return}
-        else{this.preview_card.image=img.path}  
+        else{this.preview_card.pathImage=img.path}  
       }
       console.log('image_uploaded')
       if(this.input_audio_value!='' && this.input_audio_value!=null){
-        if(this.preview_card.audio==""){
+        if(this.preview_card.pathSound==""){
           let mp3=await this.upload_file(this.input_audio_value,'audio')
           if(!mp3){return}
-          else{this.preview_card.audio=mp3.path} 
+          else{this.preview_card.pathSound=mp3.path} 
         }
       }else{
-        this.preview_card.audio=""
+        this.preview_card.pathSound=""
       }
       console.log('audio_uploaded')
       if(this.input_video_value!='' && this.input_video_value!=null){
-        if(this.preview_card.video==""){
+        if(this.preview_card.pathVideo==""){
           let mp4=await this.upload_file(this.input_video_value,'video')
           if(!mp4){return}
-          else{this.preview_card.video=mp4.path} 
+          else{this.preview_card.pathVideo=mp4.path} 
         }
       }else{
-        this.preview_card.video=""
+        this.preview_card.pathVideo=""
       }
       console.log('video_uploaded')
       if(this.input_meaning_value!='' && this.input_meaning_value!=null){
         console.log('meaning_validation')
-        if(this.preview_card.meaning==""){
+        if(this.preview_card.pathMeaning==""){
           let pdf=await this.upload_file(this.input_meaning_value,'meaning')
           if(!pdf){return}
-          else{this.preview_card.meaning=pdf.path} 
+          else{this.preview_card.pathMeaning=pdf.path} 
         }
       }else{
-        this.preview_card.meaning=""
+        this.preview_card.pathMeaning=""
       }
       console.log('meaning_uploaded')
       alert(JSON.stringify(this.preview_card))
-      if(this.preview_card.topic_id==0){
+      axios.post(P.VUE_APP_SERVER_HOST+":"+P.VUE_APP_SERVER_PORT+P.VUE_APP_INSERT_TOPIC_CARD,this.preview_card).then(response=>{
+        console.log(response)
+        this.show_alert("Card saved successfully","success")
+        
+      }).catch(error=>{
+        this.show_alert("Error: "+error,"error")
+      })
+      if(this.preview_card.cveTopic==0){
         await this.load_topics()
       }
+
       this.show_alert("Card saved successfully","success")
-      this.table_data_cards.push(this.preview_card)
-      let a=this.preview_card.topic_id
-      let b=this.preview_card.topic_text
+      
+      // this.table_data_cards.push(this.preview_card)
+      let a=this.preview_card.cveTopic
+      let b=this.preview_card.topicName
       this.preview_card=new Card()
       if(a!=0){
-        this.preview_card.topic_id=a
-        this.preview_card.topic_text=b
+        this.preview_card.cveTopic=a
+        this.preview_card.topicName=b
       }else{
         this.list_all_topics.forEach(element => {
           if(element.topicName==b){
-            this.preview_card.topic_id=element.cveTopic
-            this.preview_card.topic_text=element.topicName
+            this.preview_card.cveTopic=element.cveTopic
+            this.preview_card.topicName=element.topicName
           }
         });
       }
@@ -282,7 +292,7 @@ export default {
     cancelRegistry(){
       this.preview_card=new Card()
       this.selected={}
-      this.preview_card.topic_text="Select Topic"
+      this.preview_card.topicName="Select Topic"
       this.image_url="404notfoundimage.png"
       this.input_image_value=[]
       this.input_audio_value=[]
@@ -293,16 +303,16 @@ export default {
     },
     select_topic(e){
       if(e.cveTopic==undefined){
-        this.preview_card.topic_text=e
-        this.preview_card.topic_id=0
+        this.preview_card.cveTopic=0
+        this.preview_card.topicName=e
         return
       }
-      this.preview_card.topic_id=e.cveTopic
-      this.preview_card.topic_text=e.topicName
+      this.preview_card.cveTopic=e.cveTopic
+      this.preview_card.topicName=e.topicName
     },
     load_image(e){    
       if(e==null || e==undefined){
-        this.preview_card.image=""
+        this.preview_card.pathImage=""
         this.image_url="404notfoundimage.png"
         return
       }    
@@ -311,7 +321,7 @@ export default {
         this.input_image_value=[] 
       }
       else{
-        this.preview_card.image="IMAGE PENDING UPLOAD"
+        this.preview_card.pathImage="IMAGE PENDING UPLOAD"
         this.image_url= URL.createObjectURL(this.input_image_value)
       }
     },
@@ -320,9 +330,12 @@ export default {
       audio.play()
     },
     show_dialog_image(url_dialog_image){
+      let urlsrc=url_dialog_image.includes("http")?url_dialog_image:P.VUE_APP_URL_FILES_TEMP+url_dialog_image
+      console.log(urlsrc)
       console.log(url_dialog_image)
       this.dialog_image_visible=true
-      this.dialog_image_url=url_dialog_image
+      
+      this.dialog_image_url=urlsrc
     },
     show_dialog_audio(url_dialog_audio){
       this.dialog_audio_visible=true
@@ -337,37 +350,44 @@ export default {
           playbackRates: [0.7, 1.0, 1.5, 2.0],
           sources: [{
             type: "video/mp4",
-            src: url_dialog_video
+            src: url_dialog_video.includes("http")?url_dialog_video:P.VUE_APP_URL_FILES_TEMP+url_dialog_video
           }]
       },
       this.dialog_video_visible=true
     },
-    async show_alert(s,type_msg){
+    show_alert(s="vacio",type_msg="info"){
       this.alert_visible=true
       this.alert_type=type_msg
       this.alert_text=s      
-      this.timeout(3000).then(()=>{
-        this.alert_visible=false
-      })
+      // this.timeout(3000).then(()=>{
+      //   this.alert_visible=false
+      // })
     },
     async load_topics(){
       this.list_all_topics=await this.get_all_topics()
+    },
+    getBase64(file) {
+      var reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = function () {
+        console.log(reader.result)
+        return reader.result;
+      };
+      reader.onerror = function (error) {
+        console.log('Error: ', error);
+        return "ERROR"
+      }
     },
     upload_file(file,type){
       try {
       let formData = new FormData()
       formData.append('files',file)
-      return axios.post(P.VUE_APP_SERVER_HOST+":"+P.VUE_APP_SERVER_PORT+P.VUE_APP_UPLOAD_FILE,
-      formData,
-      {
-        headers: {
-            'Content-Type': 'multipart/form-data',
-            'X-Type': type
-        },
-      }
-      ).then(function(res){
-        if(res.data.status==200){
-          console.log(res.data.path)
+      console.log(P.VUE_APP_SERVER_HOST+":"+P.VUE_APP_SERVER_FILE_PORT+P.VUE_APP_UPLOAD_FILE)
+      return axios.post(P.VUE_APP_SERVER_HOST+":"+P.VUE_APP_SERVER_FILE_PORT+P.VUE_APP_UPLOAD_FILE,formData,{headers: {'Content-Type': 'multipart/form-data','X-Type':type}
+      }).then(function(res){
+        console.log(res)
+        if(res.status==200){
+          console.log(res.data)
           return res.data
         }
         else{
@@ -375,12 +395,13 @@ export default {
           return false
         }
       })
-      .catch(function(){
-        this.show_alert("Error uploading file","error")
+      .catch(function(error){
+        console.log(error)
+        this.show_alert("Error uploading file catch es del request","error")
         return false
       });  
       } catch (error) {
-        this.show_alert("Error uploading file","error")
+        this.show_alert("Error uploading file catch es de la funcion","error")
         return false
       }
     },
@@ -389,62 +410,79 @@ export default {
     },
     show_dialog_meaning(url_dialog_meaning){
       this.dialog_meaning_visible=true
-      this.dialog_meaning_url=url_dialog_meaning
+      this.dialog_meaning_url=url_dialog_meaning.includes("http")?url_dialog_meaning:P.VUE_APP_URL_FILES_TEMP+url_dialog_meaning
     },
     edit_registry(id){
       document.body.scrollTop = document.documentElement.scrollTop = 0;
       this.table_data_cards.forEach(element => {
-        if(element.id==id){
+        if(element.cveCard==id){
           this.text_btn_save="Update"
           this.input_image_value=[]
           this.input_audio_value=[]
           this.input_video_value=[]
           this.input_meaning_value=[]
           this.preview_card=element
-          this.selected={cveTopic:element.topic_id,topicName:element.topic_text}
-          this.image_url=element.image
-          this.input_image_value=new File([element.image],element.image.split('/').pop())
-          if(element.audio!=''){
-            this.input_audio_value=new File([element.audio],element.audio.split('/').pop())
+          this.selected={cveTopic:element.cveTopic,topicName:element.topicName}
+          this.image_url=element.pathImage.includes("http")?element.pathImage:P.VUE_APP_URL_FILES_TEMP+element.pathImage
+          this.input_image_value=new File([element.pathImage],element.pathImage.split('/').pop())
+          if(element.pathSound!=''){
+            this.input_audio_value=new File([element.pathSound],element.pathSound.split('/').pop())
           }
-          if(element.video!='')
-          this.input_video_value=new File([element.video],element.video.split('/').pop())
-          if(element.meaning!='')
-          this.input_meaning_value=new File([element.meaning],element.meaning.split('/').pop())
+          if(element.pathVideo!='')
+          this.input_video_value=new File([element.pathVideo],element.pathVideo.split('/').pop())
+          if(element.pathMeaning!='')
+          this.input_meaning_value=new File([element.pathMeaning],element.pathMeaning.split('/').pop())
           if(!this.expand)this.showForm()
           return 
         }
       });
     },
     delete_registry(id){
-      alert('se elimina '+id)
+      console.log(P.VUE_APP_SERVER_HOST+":"+P.VUE_APP_SERVER_PORT+P.VUE_APP_DELETE_CARD+"?cveCard="+id)
+      axios.get(P.VUE_APP_SERVER_HOST+":"+P.VUE_APP_SERVER_PORT+P.VUE_APP_DELETE_CARD,{ params: { cveCard:id } }).then(function(res){
+        if(res.status==200){
+          this.show_alert("Deleted","info")
+          this.load_cards() //Resolver en local
+        }
+        else{
+          this.show_alert("Error to delete card, try again.","error")
+        }
+      }).catch(function(error){
+        console.log(error)
+        this.show_alert("Error to delete card, try again.","error")
+      })
     },
   },
   //First function to run
   async created(){
-    this.preview_card.topic_text="Select Topic"
+    this.preview_card.topicName="Select Topic"
     //Get all topics
     this.load_topics()
     //Get data table
     this.show_alert("Loading data, please wait...","info")
-    await this.timeout(2000)
-    this.show_alert("Data loaded successfully","success")
-    this.table_data_cards=[
-      {id:1,topic_id:1,topic_text:"PRONOMS",text:"YOU",image:"https://www.gettyimages.com.mx/gi-resources/images/500px/983794168.jpg",audio:"https://www.loquesea/asd.mp3",video:"video/hello_video.mp4",meaning:""},
-      {id:2,topic_id:2,topic_text:"COLORS",text:"ORANGE",image:"https://cdn.pixabay.com/photo/2021/08/25/20/42/field-6574455__340.jpg",audio:"https://www.loquesea/asd.mp3",video:"http://www.loquesea/asd",meaning:"https://fondosmil.com/fondo/11764.jpg"},
-      {id:3,topic_id:2,topic_text:"COLORS",text:"PURPLE",image:"https://www.gettyimages.es/gi-resources/images/frontdoor/editorial/Velo/GettyImages-Velo-1088643550.jpg",audio:"https://www.loquesea/asd.mp3",video:"https://www.w3school.com.cn/example/html5/mov_bbb.mp4",meaning:"http://qnimate.com/wp-content/uploads/2014/03/images2.jpg"},
-      {id:4,topic_id:2,topic_text:"COLORS",text:"BLACK",image:"https://www.gettyimages.es/gi-resources/images/frontdoor/editorial/Velo/GettyImages-Velo-1088643550.jpg",audio:"",video:"https://www.w3school.com.cn/example/html5/mov_bbb.mp4",meaning:"http://qnimate.com/wp-content/uploads/2014/03/images2.jpg"},
-      {id:5,topic_id:2,topic_text:"COLORS",text:"WHITE",image:"https://www.gettyimages.es/gi-resources/images/frontdoor/editorial/Velo/GettyImages-Velo-1088643550.jpg",audio:"",video:"https://www.w3school.com.cn/example/html5/mov_bbb.mp4",meaning:"http://qnimate.com/wp-content/uploads/2014/03/images2.jpg"},
-      {id:6,topic_id:2,topic_text:"COLORS",text:"BLUE",image:"https://www.gettyimages.es/gi-resources/images/frontdoor/editorial/Velo/GettyImages-Velo-1088643550.jpg",audio:"",video:"https://www.w3school.com.cn/example/html5/mov_bbb.mp4",meaning:"http://qnimate.com/wp-content/uploads/2014/03/images2.jpg"},
-      {id:7,topic_id:2,topic_text:"COLORS",text:"YELLOW",image:"https://www.gettyimages.es/gi-resources/images/frontdoor/editorial/Velo/GettyImages-Velo-1088643550.jpg",audio:"",video:"https://www.w3school.com.cn/example/html5/mov_bbb.mp4",meaning:"http://qnimate.com/wp-content/uploads/2014/03/images2.jpg"},
-    ]    
+    console.log(P.VUE_APP_SERVER_HOST+":"+P.VUE_APP_SERVER_PORT+P.VUE_APP_GET_ALL_CARDS)
+    this.table_data_cards=await axios.get(P.VUE_APP_SERVER_HOST+":"+P.VUE_APP_SERVER_PORT+P.VUE_APP_GET_ALL_CARDS).then(function(res){
+      console.log(res)
+      if(res.status==200){
+        return res.data
+      }
+      else{
+        this.show_alert("Error to load data, try again.","error")
+        return []
+      }
+    }).catch(function(error){
+      console.log(error)
+      this.show_alert("Error to load data, try again.","error")
+      return []
+    })
+    
   },
   computed: {
     filteredItems () {
       return this.table_data_cards.filter(item => {
-         return (item.text.toLowerCase().indexOf(this.search.toLowerCase()) > -1 ||
-         item.id.toString().indexOf(this.search.toLowerCase()) > -1 ||
-         item.topic_text.toLowerCase().indexOf(this.search.toLowerCase()) > -1 )
+         return (item.cardText.toLowerCase().indexOf(this.search.toLowerCase()) > -1 ||
+         item.cveCard.toString().indexOf(this.search.toLowerCase()) > -1 ||
+         item.topicName.toLowerCase().indexOf(this.search.toLowerCase()) > -1 )
       })
     }
   }
