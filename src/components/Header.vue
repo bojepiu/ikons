@@ -20,7 +20,6 @@
             <v-tab to="modules">Modules</v-tab>
             <v-tab to="sessions">Sessions</v-tab>
             <v-tab to="sentences">Sentences</v-tab>
-            <v-tab to="topics">Topics</v-tab>
             <v-tab to="cards">Cards</v-tab>
             <v-tab to="tests">Tests</v-tab>
         </v-tabs>

@@ -1,7 +1,10 @@
 export default class Sentence {
     constructor() {
       this.cveSentence=0
+      this.cards=[] //Arreglo de tarjetas
       this.sentenceName=""
-      this.card=[] //Arreglo de tarjetas
+      this.pathSound=""
+      this.pathVideo=""
+      this.pathInfo=""
     }
   }
