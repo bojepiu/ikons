@@ -105,9 +105,6 @@ export default {
       else{this.icon_new='mdi-plus'}
     },
     select_sentence(e){
-      // this.session_items.forEach((item)=>{
-
-      // })
       var sentenceName=""
       this.data_sentences.forEach(el=>{
         if(el.cveSentence==e){
