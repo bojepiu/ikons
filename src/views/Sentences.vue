@@ -134,9 +134,8 @@ export default {
     },
     async get_cards_by_topic(e){
       console.log(e)
-      console.log(P.VUE_APP_SERVER_HOST+":"+P.VUE_APP_SERVER_PORT+P.VUE_APP_GET_ALL_CARDS_BY_TOPIC+"?cveTopic="+e)
-      return await axios.get(P.VUE_APP_SERVER_HOST+":"+P.VUE_APP_SERVER_PORT+
-      P.VUE_APP_GET_ALL_CARDS_BY_TOPIC+"?cveTopic="+e).then(response=>{
+      console.log(P.VUE_APP_GET_ALL_CARDS_BY_TOPIC+"?cveTopic="+e)
+      return await axios.get(P.VUE_APP_GET_ALL_CARDS_BY_TOPIC+"?cveTopic="+e).then(response=>{
         if(response.status==204){
           this.itemsP=[]
           return
@@ -205,9 +204,8 @@ export default {
     },
     async get_all_topics(){
       this.show_alert("Loading data, please wait","info")
-      console.log(P.VUE_APP_SERVER_HOST+":"+P.VUE_APP_SERVER_PORT+P.VUE_APP_GET_ALL_TOPICS)
-      return await axios.get(P.VUE_APP_SERVER_HOST+":"+P.VUE_APP_SERVER_PORT+
-      P.VUE_APP_GET_ALL_TOPICS).then(response=>{
+      console.log(P.VUE_APP_GET_ALL_TOPICS)
+      return await axios.get(P.VUE_APP_GET_ALL_TOPICS).then(response=>{
         return response.data
       }).catch(error=>{
         if(error.response.status==204){
@@ -220,8 +218,8 @@ export default {
       let x=confirm("Are you sure you want to delete this sentence?")
       if(!x){return}
       this.show_alert("Deleting sentence, please wait","info")
-      console.log(P.VUE_APP_SERVER_HOST+":"+P.VUE_APP_SERVER_PORT+P.VUE_APP_DELETE_SENTENCE+"?cveSentence="+id)
-      let result= await axios.get(P.VUE_APP_SERVER_HOST+":"+P.VUE_APP_SERVER_PORT+P.VUE_APP_DELETE_SENTENCE,{ params: { cveSentence:id } }).then(function(res){
+      console.log(P.VUE_APP_DELETE_SENTENCE+"?cveSentence="+id)
+      let result= await axios.get(P.VUE_APP_DELETE_SENTENCE,{ params: { cveSentence:id } }).then(function(res){
           return res.data
       }).catch(function(error){
         console.log(error)
@@ -284,8 +282,7 @@ export default {
         }
         // let js={cveSentence:0,card:this.sentence_object.card}
         console.log(this.sentence_object)
-        axios.post(P.VUE_APP_SERVER_HOST+":"+P.VUE_APP_SERVER_PORT+
-        P.VUE_APP_INSERT_SENTENCE,this.sentence_object).then(response=>{
+        axios.post(P.VUE_APP_INSERT_SENTENCE,this.sentence_object).then(response=>{
           this.show_alert("Sentence saved","success")
           this.btn_save=false
           console.log(response.status)
@@ -350,8 +347,8 @@ export default {
       try {
       let formData = new FormData()
       formData.append('files',file)
-      console.log(P.VUE_APP_SERVER_HOST+":"+P.VUE_APP_SERVER_FILE_PORT+P.VUE_APP_UPLOAD_FILE)
-      return axios.post(P.VUE_APP_SERVER_HOST+":"+P.VUE_APP_SERVER_FILE_PORT+P.VUE_APP_UPLOAD_FILE,formData,{headers: {'Content-Type': 'multipart/form-data','X-Type':type}
+      console.log(P.VUE_APP_UPLOAD_FILE)
+      return axios.post(P.VUE_APP_UPLOAD_FILE,formData,{headers: {'Content-Type': 'multipart/form-data','X-Type':type}
       }).then(function(res){
         console.log(res)
         if(res.status==200){
@@ -413,9 +410,8 @@ export default {
     getAllSentences(){
       this.show_alert("Loading data, please wait","info")
       this.table_data_sentences=[]
-      console.log(P.VUE_APP_SERVER_HOST+":"+P.VUE_APP_SERVER_PORT+P.VUE_APP_GET_ALL_SENTENCES)
-      return axios.get(P.VUE_APP_SERVER_HOST+":"+P.VUE_APP_SERVER_PORT+
-      P.VUE_APP_GET_ALL_SENTENCES).then(response=>{
+      console.log(P.VUE_APP_GET_ALL_SENTENCES)
+      return axios.get(P.VUE_APP_GET_ALL_SENTENCES).then(response=>{
         if(response.status==204){
           console.log("No data")
           this.table_data_sentences=[]

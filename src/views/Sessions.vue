@@ -141,7 +141,7 @@ export default {
         this.session.sentences.push({cveSentence:e.key})
       })
       console.log(this.session.sentences)
-      axios.post(P.VUE_APP_SERVER_HOST+':'+P.VUE_APP_SERVER_PORT+P.VUE_APP_INSERT_SESSION,{cveSession:this.session.cveSession,sessionName:this.session.sessionName,
+      axios.post(P.VUE_APP_INSERT_SESSION,{cveSession:this.session.cveSession,sessionName:this.session.sessionName,
       sessionDesc:this.session.sesionDesc,sentences:this.session.sentences}).then(res=>{
         console.log(res.status_code)
         this.session = new Session()
@@ -180,7 +180,7 @@ export default {
       let x=confirm("Are you sure delete this session?")
       if(x){
         try {
-          axios.get(P.VUE_APP_SERVER_HOST+":"+P.VUE_APP_SERVER_PORT+P.VUE_APP_DELETE_SESSION+"?cveSession="+id).then(()=>{
+          axios.get(P.VUE_APP_DELETE_SESSION+"?cveSession="+id).then(()=>{
             this.getSessionsWithoutAssign()
             this.getAllSessions()
             this.show_alert("Session deleted!","success")
@@ -210,9 +210,8 @@ export default {
     //De momento get_all_sessions
     getSessionsWithoutAssign(){
       this.data_sentences=[]
-      console.log(P.VUE_APP_SERVER_HOST+":"+P.VUE_APP_SERVER_PORT+'/ikon/v1/sentence/notassociated/')
-      return axios.get(P.VUE_APP_SERVER_HOST+":"+P.VUE_APP_SERVER_PORT+
-      '/ikon/v1/sentence/notassociated/').then(response=>{
+      console.log('/ikon/v1/sentence/notassociated/')
+      return axios.get('/ikon/v1/sentence/notassociated/').then(response=>{
         if(response.status==204){
           console.log("No data")
           this.data_sentences=[]
@@ -234,9 +233,8 @@ export default {
     getAllSessions(){
       this.show_alert("Loading data, please wait","info")
       this.table_data_sessions=[]
-      console.log(P.VUE_APP_SERVER_HOST+":"+P.VUE_APP_SERVER_PORT+P.VUE_APP_GET_ALL_SESSIONS)
-      return axios.get(P.VUE_APP_SERVER_HOST+":"+P.VUE_APP_SERVER_PORT+
-      P.VUE_APP_GET_ALL_SESSIONS).then(response=>{
+      console.log(P.VUE_APP_GET_ALL_SESSIONS)
+      return axios.get(P.VUE_APP_GET_ALL_SESSIONS).then(response=>{
         if(response.status==204){
           console.log("No data")
           this.table_data_sessions=[]

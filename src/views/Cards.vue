@@ -232,7 +232,7 @@ export default {
       }
       console.log('meaning_uploaded')
       // alert(JSON.stringify(this.preview_card))
-      axios.post(P.VUE_APP_SERVER_HOST+":"+P.VUE_APP_SERVER_PORT+P.VUE_APP_INSERT_TOPIC_CARD,this.preview_card).then(response=>{
+      axios.post(P.VUE_APP_INSERT_TOPIC_CARD,this.preview_card).then(response=>{
         console.log(response)
         this.show_alert("Card saved successfully","success")
         
@@ -356,9 +356,8 @@ export default {
       })
     },
     async load_topics(){
-      console.log(P.VUE_APP_SERVER_HOST+":"+P.VUE_APP_SERVER_PORT+P.VUE_APP_GET_ALL_CARDS)
-      await axios.get(P.VUE_APP_SERVER_HOST+":"+P.VUE_APP_SERVER_PORT+
-      P.VUE_APP_GET_ALL_CARDS).then(response=>{
+      console.log(P.VUE_APP_GET_ALL_CARDS)
+      await axios.get(P.VUE_APP_GET_ALL_CARDS).then(response=>{
         this.list_all_topics=response.data
       }).catch(error=>{
         this.list_all_topics=[]
@@ -369,8 +368,8 @@ export default {
       try {
       let formData = new FormData()
       formData.append('files',file)
-      console.log(P.VUE_APP_SERVER_HOST+":"+P.VUE_APP_SERVER_FILE_PORT+P.VUE_APP_UPLOAD_FILE)
-      return axios.post(P.VUE_APP_SERVER_HOST+":"+P.VUE_APP_SERVER_FILE_PORT+P.VUE_APP_UPLOAD_FILE,formData,{headers: {'Content-Type': 'multipart/form-data','X-Type':type}
+      console.log(P.VUE_APP_UPLOAD_FILE)
+      return axios.post(P.VUE_APP_UPLOAD_FILE,formData,{headers: {'Content-Type': 'multipart/form-data','X-Type':type}
       }).then(function(res){
         console.log(res)
         if(res.status==200){
@@ -427,8 +426,8 @@ export default {
     async get_all_data(){
       this.show_alert("Loading data, please wait...","info")
       this.load_topics()
-      console.log(P.VUE_APP_SERVER_HOST+":"+P.VUE_APP_SERVER_PORT+P.VUE_APP_GET_ALL_CARDS)
-      this.table_data_cards=await axios.get(P.VUE_APP_SERVER_HOST+":"+P.VUE_APP_SERVER_PORT+P.VUE_APP_GET_ALL_CARDS).then(function(res){
+      console.log(P.VUE_APP_GET_ALL_CARDS)
+      this.table_data_cards=await axios.get(P.VUE_APP_GET_ALL_CARDS).then(function(res){
         if(res.status==200){
           return res.data
         }
@@ -444,8 +443,8 @@ export default {
       }
     },
     delete_registry(id){
-      console.log(P.VUE_APP_SERVER_HOST+":"+P.VUE_APP_SERVER_PORT+P.VUE_APP_DELETE_CARD+"?cveCard="+id)
-      axios.get(P.VUE_APP_SERVER_HOST+":"+P.VUE_APP_SERVER_PORT+P.VUE_APP_DELETE_CARD,{ params: { cveCard:id } }).then(function(res){
+      console.log(P.VUE_APP_DELETE_CARD+"?cveCard="+id)
+      axios.get(P.VUE_APP_DELETE_CARD,{ params: { cveCard:id } }).then(function(res){
         if(res.status==200){
           this.show_alert("Deleted","info")
           this.load_cards() //Resolver en local
@@ -465,8 +464,8 @@ export default {
     //Get data
     this.show_alert("Loading data, please wait...","info")
     this.load_topics()
-    console.log(P.VUE_APP_SERVER_HOST+":"+P.VUE_APP_SERVER_PORT+P.VUE_APP_GET_ALL_CARDS)
-    this.table_data_cards=await axios.get(P.VUE_APP_SERVER_HOST+":"+P.VUE_APP_SERVER_PORT+P.VUE_APP_GET_ALL_CARDS).then(function(res){
+    console.log(P.VUE_APP_GET_ALL_CARDS)
+    this.table_data_cards=await axios.get(P.VUE_APP_GET_ALL_CARDS).then(function(res){
       if(res.status==200){
         return res.data
       }

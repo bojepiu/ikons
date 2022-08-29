@@ -67,7 +67,7 @@
             <td>{{row.item.cveModule}}</td>
             <td>{{row.item.moduleName}}</td>
             <td>{{row.item.moduleDesc}}</td>
-            <td>{{row.item.sessione.length}}</td>
+            <td>{{row.item.sessiones.length}}</td>
             <!-- <td>{{row.item.sentences}}</td> -->
             <td>
               <v-icon medium border @click="edit_session_registry(row.item)">mdi-pencil-outline</v-icon> 
@@ -148,7 +148,7 @@ export default {
       })
       console.log({cveModule:this.module.cveModule,moduleName:this.module.moduleName,
       moduleDesc:this.module.moduleDesc,sesiones:this.module.sesiones})
-      axios.post(P.VUE_APP_SERVER_HOST+':'+P.VUE_APP_SERVER_PORT+P.VUE_APP_INSERT_MODULE,{cveModule:this.module.cveModule,moduleName:this.module.moduleName,
+      axios.post(P.VUE_APP_INSERT_MODULE,{cveModule:this.module.cveModule,moduleName:this.module.moduleName,
       moduleDesc:this.module.moduleDesc,sesiones:this.module.sesiones}).then(res=>{
         console.log(res.status_code)
         this.module = new Module()
@@ -190,9 +190,8 @@ export default {
     },
     getAllSessions(){
       this.data_sessions=[]
-      console.log(P.VUE_APP_SERVER_HOST+":"+P.VUE_APP_SERVER_PORT+P.VUE_APP_GET_ALL_SESSIONS)
-      return axios.get(P.VUE_APP_SERVER_HOST+":"+P.VUE_APP_SERVER_PORT+
-      P.VUE_APP_GET_ALL_SESSIONS).then(response=>{
+      console.log(P.VUE_APP_GET_ALL_SESSIONS)
+      return axios.get(P.VUE_APP_GET_ALL_SESSIONS).then(response=>{
         console.log(response)
         if(response.status==204){
           console.log("No data")
@@ -215,9 +214,8 @@ export default {
     getAllModules(){
       this.show_alert("Loading data, please wait","info")
       this.table_data_modules=[]
-      console.log(P.VUE_APP_SERVER_HOST+":"+P.VUE_APP_SERVER_PORT+P.VUE_APP_GET_ALL_MODULES)
-      return axios.get(P.VUE_APP_SERVER_HOST+":"+P.VUE_APP_SERVER_PORT+
-      P.VUE_APP_GET_ALL_MODULES).then(response=>{
+      console.log(P.VUE_APP_GET_ALL_MODULES)
+      return axios.get(P.VUE_APP_GET_ALL_MODULES).then(response=>{
         if(response.status==204){
           console.log("No data")
           this.table_data_modules=[]
